@@ -1,3 +1,21 @@
-h1 {
-    color: green;
+.construction {
+    height: 70px;
+    width: 400px;
+    padding: 20px;
+    margin: auto;
+    border: 10px solid red;
+    background-color: yellow;
+    color: black;
+    font-size: xx-large;
+    text-align: center;
+}
+
+.hyperlinks{
+    color: lime;
+}
+
+body {
+    text-align: center;
+    color: cyan;
+    background: black;
 }
