@@ -1,0 +1,9 @@
+.Loader {
+    font-family: 'ZCOOL Kuaile', cursive;
+    font-size: 40px;
+    color: palevioletred;
+}
+
+.Loader::after {
+    content: '\2026';
+}

@@ -14,8 +14,12 @@
     color: lime;
 }
 
+.Texts {
+    color: cyan;
+}
+
 body {
     text-align: center;
-    color: cyan;
+    /* color: cyan; */
     background: black;
 }
