@@ -142,3 +142,9 @@ html {
 .language:hover {
     background-color: #555;
 }
+
+.about-info {
+    text-align: left;
+    padding: 2px 0;
+    opacity: .8;
+}
