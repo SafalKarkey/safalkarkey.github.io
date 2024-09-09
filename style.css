@@ -1,0 +1,144 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #1a1a1a;
+    color: #f0f0f0;
+    display: flex;
+}
+
+.sidebar {
+    width: 25%;
+    background-color: #2c2c2c;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    position: fixed;
+}
+
+.profile-pic {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin-bottom: 20px;
+    border: 3px solid #4CAF50;
+}
+
+h1 {
+    color: #4CAF50;
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+p {
+    font-size: 1rem;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+ul li {
+    margin: 15px 0;
+}
+
+ul li a {
+    color: #f0f0f0;
+    text-decoration: none;
+    font-size: 1.1rem;
+    transition: color 0.3s ease;
+}
+
+ul li a:hover {
+    color: #4CAF50;
+}
+
+.content {
+    margin-left: 25%;
+    padding: 40px;
+    width: 75%;
+}
+
+section {
+    margin-bottom: 40px;
+}
+
+h2 {
+    color: #4CAF50;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+}
+
+p {
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+.skills-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.skill-box {
+    background-color: #2c2c2c;
+    border-radius: 10px;
+    padding: 20px;
+    flex-basis: calc(50% - 20px); /* Adjusts to make 2 columns */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.skill-box h3 {
+    color: #4CAF50;
+    margin-bottom: 10px;
+}
+
+.skill-box p {
+    color: #f0f0f0;
+}
+
+.skill-box:hover {
+    transform: translateY(-10px); /* Adds a hover effect */
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .skill-box {
+        flex-basis: 100%; /* Stacks boxes vertically on smaller screens */
+    }
+}
+
+.languages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.language {
+    background-color: #444;
+    color: #f0f0f0;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease;
+}
+
+.language:hover {
+    background-color: #555;
+}
