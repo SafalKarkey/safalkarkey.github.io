@@ -145,20 +145,24 @@ body {
 }
 
 /* Style buttons */
-.download {
-    background-color: DodgerBlue;
-    border: none;
+.download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--primary-color);
     color: white;
-    padding: 12px 30px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background 0.3s;
+    border: none;
     cursor: pointer;
-    font-size: 20px;
-  }
-  
-  /* Darker background on mouse-over */
-  .download:hover {
-    background-color: RoyalBlue;
-  }
+    margin-top: 10px;
+}
 
+.download-btn:hover {
+    background: var(--secondary-color);
+}
 .social-links {
     display: flex;
     gap: 20px;
