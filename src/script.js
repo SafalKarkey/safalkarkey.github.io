@@ -37,9 +37,9 @@ document.querySelectorAll('.project-card').forEach(card => {
 // Navbar scroll effect
 window.addEventListener('scroll', function() {
     if (window.scrollY > 50) {
-        document.querySelector('.navbar').style.background = 'rgba(255, 255, 255, 0.98)';
+        document.querySelector('.navbar').style.background = 'rgba(35, 40, 47, 0.40)';
     } else {
-        document.querySelector('.navbar').style.background = 'rgba(255, 255, 255, 0.95)';
+        document.querySelector('.navbar').style.background = 'rgba(35, 40, 47, 0.98)';
     }
 });
 
