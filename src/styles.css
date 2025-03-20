@@ -101,7 +101,7 @@ body {
 
 .profile-img {
     width: 100%;
-    max-width: 400px;
+    max-width: 350px;
     height: auto;
     border-radius: 15px;
     box-shadow: var(--shadow);
