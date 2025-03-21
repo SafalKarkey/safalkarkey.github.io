@@ -697,3 +697,14 @@ button:hover {
         margin-bottom: 30px;
     }
 }
+
+.footer {
+    background-color: #222; /* Dark background */
+    color: white;
+    text-align: center;
+    padding: 15px;
+    font-size: 0.9rem;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+}
