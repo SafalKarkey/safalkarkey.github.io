@@ -23,13 +23,14 @@
     </nav>
 
     <section id="home" class="hero">
+        <div class="stars-container"></div>
         <div class="hello-container">
             <div class="profile-wrapper">
                 <img src="assets/backsafal.jpg" alt="Your Name" class="profile-img">
             </div>
             <div class="about-summary">
-                <h1 class="name">Safal Karki</h1>
-                <h2 class="title">Software Engineer</h2>
+                <h1 class="name" id="safal">Safal Karki</h1>
+                <h2 class="title" id="softeng">Software Engineer</h2>
                 <div class="description">
                     <p>
                         I'm a software engineer and AI/ML enthusiast with a deep interest in computer science. I love critically analyzing problems and coming up with solutions. In my free time, I enjoy reading and staying up-to-date on current events. My passion for learning and problem-solving drives me in both my work and hobbies.
@@ -58,24 +59,20 @@
     <section id="skills">
         <h2 class="section-title">Skills & Expertise</h2>
         <div class="skills-container">
-            <!-- Left Column -->
             <div class="skill-content">
                 <h3>Applying Technology to Solve Problems</h3>
                 <p class="skill-description">
                     My skill set includes web development tools such as JavaScript, HTML, CSS and backend tool Node.js. I am
                     adept in application development with Unity with C# programming language.
                     Moreover, I am also comfortable in getting my hands in low level stuffs using C/C++.
-                    
+
                     I can efficiently work in either Windows or Linux
                     Operating Systems. I also harness the power of shell scripting using powershell and bash to automate my workflow.
                 </p>
             </div>
-    
-            <!-- Right Column -->
+
             <div class="skill-cards">
-                <!-- Programming Languages -->
                 <div class="languages-grid">
-                    <!-- <h4>Languages and </h4> -->
                     <div class="cards-container">
                         <div class="skill-card">
                             <i class="fab fa-js"></i>
@@ -85,12 +82,7 @@
                         <div class="skill-card">
                             <i class="fab fa-html5"></i>
                             <h5>HTML5/CSS</h5>
-                            <!-- <p></p> -->
-                        </div>
-                        <!-- <div class="skill-card">
-                            <img class="custom-icon" src="assets/csharp.svg" alt="C++ Icon">
-                            <h5>C#</h5>
-                        </div> -->
+                            </div>
                         <div class="skill-card">
                             <i class="fab fa-unity"></i>
                             <h5>Unity</h5>
@@ -120,11 +112,9 @@
                             <img class="custom-icon" src="assets/terminal.svg" alt="Shell Icon">
                             <h5>Shell Scripting</h5>
                         </div>
-                        <!-- Add more language cards -->
-                    </div>
+                        </div>
                 </div>
-    
-                <!-- Domains -->
+
                 <div class="domain-list">
                     <h4>Domains</h4>
                     <div class="domains-container">
@@ -133,8 +123,7 @@
                         <span class="domain-tag">Linux Systems</span>
                         <span class="domain-tag">Image Processing</span>
                         <span class="domain-tag">Bug Hunting</span>
-                        <!-- Add more domains -->
-                    </div>
+                        </div>
                 </div>
             </div>
         </div>
@@ -143,7 +132,6 @@
     <section id="education">
         <h2 class="section-title">Education</h2>
         <div class="education-container">
-            <!-- Education Item 1 -->
             <div class="education-card">
                 <div class="education-icon">
                     <i class="fas fa-graduation-cap"></i>
@@ -155,8 +143,7 @@
                     <h4 class="education-institution">Tribhuvan University</h4>
                 </div>
             </div>
-    
-            <!-- Education Item 2 -->
+
             <div class="education-card">
                 <div class="education-icon">
                     <i class="fas fa-certificate"></i>
@@ -168,7 +155,6 @@
                 </div>
             </div>
 
-            <!-- Education Item 3 -->
             <div class="education-card">
                 <div class="education-icon">
                     <i class="fas fa-certificate"></i>
@@ -185,7 +171,6 @@
     <section id="projects">
         <h2 class="section-title">Projects</h2>
         <div class="projects-grid">
-            <!-- Project Item 1 -->
             <div class="project-card">
                 <div class="project-image-wrapper">
                     <img src="assets/projects/hand.png" alt="Project 1" class="project-image">
@@ -194,11 +179,10 @@
                         <p class="project-subtitle">Unity Application Develpoment</p>
                     </div>
                 </div>
-                
-                <!-- Project Modal -->
+
                 <div class="project-modal">
                     <div class="modal-content">
-                        <span class="close-modal">&times;</span>
+                        <span class="close-modal">×</span>
                         <div class="modal-image-container">
                             <img src="assets/projects/hand.png" alt="Project 1" class="modal-image">
                         </div>
@@ -208,7 +192,7 @@
                                 <span class="meta-item"><i class="fas fa-tags"></i>Game Develpoment</span>
                             </div>
                             <p class="project-description">
-                                A virtual reality application made using Unity and C# programming language. The user wears a glove fitted with 
+                                A virtual reality application made using Unity and C# programming language. The user wears a glove fitted with
                                 hall effect sensors, a Nodejs server captures the data and Unity Application receives it. Then the hand is simulated
                                 as the user moves around their glove-wearing hand. Completed as part of Undergrad Minor Project with a team of four members.
                             </p>
@@ -219,7 +203,6 @@
                     </div>
                 </div>
             </div>
-            <!-- Falappy NP project -->
             <div class="project-card">
                 <div class="project-image-wrapper">
                     <img src="assets/projects/flappy.png" alt="Project 2" class="project-image">
@@ -228,11 +211,10 @@
                         <p class="project-subtitle">Web App Development</p>
                     </div>
                 </div>
-                
-                <!-- Project Modal -->
+
                 <div class="project-modal">
                     <div class="modal-content">
-                        <span class="close-modal">&times;</span>
+                        <span class="close-modal">×</span>
                         <div class="modal-image-container">
                             <img src="assets/projects/flappy.png" alt="Project 1" class="modal-image">
                         </div>
@@ -242,7 +224,7 @@
                                 <span class="meta-item"><i class="fas fa-tags"></i> Web Development</span>
                             </div>
                             <p class="project-description">
-                                A flappy bird game in context to Nepali environment. I showcase my web app development and game 
+                                A flappy bird game in context to Nepali environment. I showcase my web app development and game
                                 logic building skills in this project.
                             </p>
                         </div>
@@ -254,7 +236,6 @@
                 </div>
             </div>
 
-            <!-- Humanoid Robot Project -->
             <div class="project-card">
                 <div class="project-image-wrapper">
                     <img src="assets/projects/robot.png" alt="Project 3" class="project-image">
@@ -266,7 +247,7 @@
 
             <div class="project-modal">
                 <div class="modal-content">
-                    <span class="close-modal">&times;</span>
+                    <span class="close-modal">×</span>
                     <div class="modal-image-container">
                         <img src="assets/projects/robot.png" alt="Project 3" class="modal-image">
                     </div>
@@ -290,7 +271,7 @@
             </div>
         </div>
     </section>
-    
+
 
     <section id="contact">
         <h2 class="section-title">Contact Me</h2>
@@ -309,7 +290,7 @@
     </section>
 
     <footer class="footer">
-        <p>&copy; 2025 Safal Karki. All rights reserved.</p>
+        <p>© 2025 Safal Karki. All rights reserved.</p>
     </footer>
 
     <script src="src/script.js"></script>
