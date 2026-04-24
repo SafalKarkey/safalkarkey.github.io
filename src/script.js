@@ -1,170 +1,167 @@
-// Smooth scrolling for navigation links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        document.querySelector(this.getAttribute('href')).scrollIntoView({
-            behavior: 'smooth'
+const body = document.body;
+const themeToggle = document.getElementById("theme-toggle");
+const themeLabel = themeToggle?.querySelector(".toggle-label");
+const terminalOutput = document.getElementById("terminal-output");
+const cursorGlow = document.getElementById("cursor-glow");
+
+const savedTheme = localStorage.getItem("portfolio-theme");
+if (savedTheme === "dark" || savedTheme === "light") {
+    body.dataset.theme = savedTheme;
+}
+
+function syncThemeUI() {
+    if (!themeToggle || !themeLabel) {
+        return;
+    }
+
+    const activeTheme = body.dataset.theme === "light" ? "light" : "dark";
+    themeToggle.setAttribute("aria-pressed", String(activeTheme === "light"));
+    themeLabel.textContent = activeTheme;
+}
+
+syncThemeUI();
+
+themeToggle?.addEventListener("click", () => {
+    const nextTheme = body.dataset.theme === "light" ? "dark" : "light";
+    body.dataset.theme = nextTheme;
+    localStorage.setItem("portfolio-theme", nextTheme);
+    syncThemeUI();
+});
+
+document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+    anchor.addEventListener("click", (event) => {
+        const targetId = anchor.getAttribute("href");
+        if (!targetId || targetId === "#") {
+            return;
+        }
+
+        const targetElement = document.querySelector(targetId);
+        if (!targetElement) {
+            return;
+        }
+
+        event.preventDefault();
+        targetElement.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
         });
     });
 });
 
-// Project Modal Logic
-document.querySelectorAll('.project-card').forEach(card => {
-    const imageWrapper = card.querySelector('.project-image-wrapper'); // Target wrapper
-    const modal = card.querySelector('.project-modal');
-    const closeBtn = modal.querySelector('.close-modal');
+const revealElements = document.querySelectorAll(".reveal");
+if ("IntersectionObserver" in window) {
+    const revealObserver = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("is-visible");
+                    revealObserver.unobserve(entry.target);
+                }
+            });
+        },
+        { threshold: 0.14 }
+    );
 
-    // Check if elements exist before adding listeners
-    if (imageWrapper && modal && closeBtn) {
-        // Open modal on image click
-        imageWrapper.addEventListener('click', () => {
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden'; // Prevent background scroll
-        });
-
-        // Close modal with button
-        closeBtn.addEventListener('click', () => {
-            modal.style.display = 'none';
-            document.body.style.overflow = 'auto'; // Restore scroll
-        });
-
-        // Close modal when clicking outside the modal content
-        modal.addEventListener('click', (e) => { // Listen on the modal background itself
-            if (e.target === modal) {
-                modal.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            }
-        });
-    } else {
-        // Log an error if elements are missing for a card
-        console.error("Modal elements missing for a project card:", card);
-    }
-});
-
-
-// Navbar scroll effect
-window.addEventListener('scroll', function() {
-    const navbar = document.querySelector('.navbar');
-    if (navbar) { // Check if navbar exists
-        if (window.scrollY > 50) {
-            // Apply a more subtle background on scroll, keeping some opacity
-            navbar.style.backgroundColor = 'rgba(26, 26, 26, 0.85)';
-            navbar.style.backdropFilter = 'blur(5px)'; // Add blur on scroll
-             navbar.style.webkitBackdropFilter = 'blur(5px)'; // Safari
-        } else {
-             // Reset to initial style (make sure this matches the CSS)
-            navbar.style.backgroundColor = 'rgba(26, 26, 26, 0.9)';
-            navbar.style.backdropFilter = 'none'; // Remove blur
-             navbar.style.webkitBackdropFilter = 'none';
-        }
-    }
-});
-
-// --- Typing Animation ---
-function typeEffect(element, text, speed, callback) {
-    let i = 0;
-    element.innerHTML = ""; // Clear element before typing
-    function type() {
-        if (i < text.length) {
-            element.innerHTML += text.charAt(i);
-            i++;
-            setTimeout(type, speed);
-        } else if (callback) {
-            // Add a slight delay before calling the callback
-            setTimeout(callback, 300);
-        }
-    }
-    type();
+    revealElements.forEach((element) => revealObserver.observe(element));
+} else {
+    revealElements.forEach((element) => element.classList.add("is-visible"));
 }
 
-function backspaceEffect(element, speed, callback) {
-    const text = element.innerHTML;
-    let i = text.length;
-    function backspace() {
-        if (i > 0) {
-            element.innerHTML = text.substring(0, i - 1);
-            i--;
-            setTimeout(backspace, speed);
-        } else if (callback) {
-             // Add a slight delay before calling the callback
-            setTimeout(callback, 500);
-        }
-    }
-    backspace();
+const terminalLines = [
+    "$ init --profile safal",
+    "> loading engineering context...",
+    "> stack: web | systems | automation | ml",
+    "> mode: build, ship, iterate",
+    "$ status --now",
+    "> ready for the next challenge",
+];
+
+function escapeHtml(text) {
+    return text
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-    const nameElement = document.getElementById("safal");
-    const titleElement = document.getElementById("softeng");
+if (terminalOutput) {
+    let lineIndex = 0;
+    let charIndex = 0;
+    let renderedLines = [""];
+    let resetTimer;
 
-    if (nameElement && titleElement) {
-        // Initial state before animation
-        nameElement.innerHTML = "";
-        titleElement.innerHTML = "&nbsp;"; // Use &nbsp; to reserve space initially
+    const renderTerminal = () => {
+        const content = renderedLines
+            .map((line) => `<div class="terminal-line">${escapeHtml(line)}</div>`)
+            .join("");
 
-        typeEffect(nameElement, "Safal Karki", 100, () => {
-            let titles = ["Software Engineer", "Web Developer", "AI/ML Enthusiast", "QA Engineer"]; // Updated title
-            let index = 0;
+        terminalOutput.innerHTML = `${content}<span class="terminal-cursor"></span>`;
+        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+    };
 
-            function loopTyping() {
-                 // Ensure title element is cleared before typing next title
-                 titleElement.innerHTML = "&nbsp;";
-                typeEffect(titleElement, titles[index], 100, () => {
-                    // Wait longer before backspacing
-                    setTimeout(() => {
-                        backspaceEffect(titleElement, 50, () => {
-                            index = (index + 1) % titles.length;
-                            loopTyping();
-                        });
-                    }, 2000); // Increased delay to 2 seconds
-                });
-            }
-            loopTyping(); // Start the title loop
+    const stepTerminal = () => {
+        if (resetTimer) {
+            clearTimeout(resetTimer);
+            resetTimer = undefined;
+        }
+
+        const currentTarget = terminalLines[lineIndex];
+        if (!currentTarget) {
+            return;
+        }
+
+        if (charIndex <= currentTarget.length) {
+            renderedLines[renderedLines.length - 1] = currentTarget.slice(0, charIndex);
+            charIndex += 1;
+            renderTerminal();
+            const delay = 24 + Math.floor(Math.random() * 26);
+            window.setTimeout(stepTerminal, delay);
+            return;
+        }
+
+        if (lineIndex < terminalLines.length - 1) {
+            lineIndex += 1;
+            charIndex = 0;
+            renderedLines.push("");
+            renderTerminal();
+            window.setTimeout(stepTerminal, 340);
+            return;
+        }
+
+        resetTimer = window.setTimeout(() => {
+            lineIndex = 0;
+            charIndex = 0;
+            renderedLines = [""];
+            renderTerminal();
+            stepTerminal();
+        }, 2000);
+    };
+
+    renderTerminal();
+    stepTerminal();
+}
+
+if (cursorGlow) {
+    const finePointer = window.matchMedia("(pointer: fine)").matches;
+    if (!finePointer) {
+        cursorGlow.style.display = "none";
+    } else {
+        let targetX = window.innerWidth / 2;
+        let targetY = window.innerHeight / 2;
+        let currentX = targetX;
+        let currentY = targetY;
+
+        window.addEventListener("pointermove", (event) => {
+            targetX = event.clientX;
+            targetY = event.clientY;
         });
-    } else {
-        console.error("Could not find elements for typing animation (#safal or #softeng).");
+
+        const animateGlow = () => {
+            currentX += (targetX - currentX) * 0.16;
+            currentY += (targetY - currentY) * 0.16;
+            cursorGlow.style.transform = `translate(${currentX}px, ${currentY}px) translate(-50%, -50%)`;
+            window.requestAnimationFrame(animateGlow);
+        };
+
+        animateGlow();
     }
-
-    // --- Shooting Stars ---
-    const starsContainer = document.querySelector('.stars-container');
-    if (starsContainer) {
-        const numberOfStars = 50; // Adjust density
-
-        for (let i = 0; i < numberOfStars; i++) {
-            createStar(starsContainer);
-        }
-    } else {
-         console.error("Could not find .stars-container element.");
-    }
-    // --- End Shooting Stars ---
-});
-
-// --- Shooting Star Creation Function ---
-function createStar(container) {
-    const star = document.createElement('div');
-    star.classList.add('star');
-
-    // Random properties
-    const size = Math.random() * 5 + 1; // Star size between 1px and 3px
-    const startX = Math.random() * 100; // Start X position (percentage)
-    const startY = Math.random() * 100; // Start Y position (percentage)
-    const duration = Math.random() * 5 + 3; // Animation duration between 3s and 8s
-    const delay = Math.random() * 5; // Animation delay up to 5s
-
-    star.style.width = `${size}px`;
-    star.style.height = `${size}px`;
-    star.style.left = `${startX}%`;
-    star.style.top = `${startY}%`;
-    star.style.animationDuration = `${duration}s`;
-    star.style.animationDelay = `${delay}s`;
-
-    container.appendChild(star);
-
-    // Remove star after animation finishes to prevent buildup (optional but good practice)
-    star.addEventListener('animationend', () => {
-        star.remove();
-        // Create a new star to replace the one that finished
-        createStar(container);
-    });
 }
-// --- End Shooting Star Creation ---
