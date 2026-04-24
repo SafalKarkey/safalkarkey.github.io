@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const terminalLines = [
     "$ init --profile safal",
@@ -8,6 +8,8 @@ const terminalLines = [
     "$ status --now",
     "> ready for the next challenge",
 ];
+const BRAND_TEXT = "Safal Karki";
+const HACKER_GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&*+-_";
 
 function escapeHtml(text) {
     return text
@@ -25,15 +27,82 @@ function App() {
         const savedTheme = window.localStorage.getItem("portfolio-theme");
         return savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark";
     });
+    const [brandDisplayText, setBrandDisplayText] = useState(BRAND_TEXT);
+    const [isBrandScrambling, setIsBrandScrambling] = useState(false);
 
     const siteHeaderRef = useRef(null);
     const terminalOutputRef = useRef(null);
     const cursorGlowRef = useRef(null);
+    const brandScrambleIntervalRef = useRef(null);
+
+    const stopBrandScramble = useCallback(() => {
+        if (brandScrambleIntervalRef.current) {
+            clearInterval(brandScrambleIntervalRef.current);
+            brandScrambleIntervalRef.current = null;
+        }
+
+        setIsBrandScrambling(false);
+    }, []);
+
+    const startBrandScramble = useCallback(() => {
+        stopBrandScramble();
+        setIsBrandScrambling(true);
+
+        let iteration = 0;
+        brandScrambleIntervalRef.current = window.setInterval(() => {
+            setBrandDisplayText(
+                BRAND_TEXT.split("")
+                    .map((character, index) => {
+                        if (character === " ") {
+                            return " ";
+                        }
+
+                        if (index < iteration) {
+                            return BRAND_TEXT[index];
+                        }
+
+                        const randomIndex = Math.floor(Math.random() * HACKER_GLYPHS.length);
+                        return HACKER_GLYPHS[randomIndex];
+                    })
+                    .join("")
+            );
+
+            iteration += 0.4;
+            if (iteration >= BRAND_TEXT.length) {
+                stopBrandScramble();
+                setBrandDisplayText(BRAND_TEXT);
+            }
+        }, 32);
+    }, [stopBrandScramble]);
+
+    const resetBrandText = useCallback(() => {
+        stopBrandScramble();
+        setBrandDisplayText(BRAND_TEXT);
+    }, [stopBrandScramble]);
 
     useEffect(() => {
         document.body.dataset.theme = theme;
         window.localStorage.setItem("portfolio-theme", theme);
     }, [theme]);
+
+    useEffect(() => {
+        return () => {
+            if (brandScrambleIntervalRef.current) {
+                clearInterval(brandScrambleIntervalRef.current);
+                brandScrambleIntervalRef.current = null;
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        const loadAnimationTimer = window.setTimeout(() => {
+            startBrandScramble();
+        }, 120);
+
+        return () => {
+            clearTimeout(loadAnimationTimer);
+        };
+    }, [startBrandScramble]);
 
     useEffect(() => {
         const header = siteHeaderRef.current;
@@ -245,7 +314,17 @@ function App() {
             </div>
 
             <header className="site-header shell-grid" ref={siteHeaderRef}>
-                <a href="#home" className="brand cell">Safal Karki</a>
+                <a
+                    href="#home"
+                    className={`brand cell${isBrandScrambling ? " is-scrambling" : ""}`}
+                    aria-label={BRAND_TEXT}
+                    onMouseEnter={startBrandScramble}
+                    onMouseLeave={resetBrandText}
+                    onFocus={startBrandScramble}
+                    onBlur={resetBrandText}
+                >
+                    <span className="brand-label">{brandDisplayText}</span>
+                </a>
                 <nav className="cell nav-links" aria-label="Primary navigation">
                     <a href="#about">About</a>
                     <a href="#skills">Capabilities</a>

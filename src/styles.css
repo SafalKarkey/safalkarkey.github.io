@@ -163,6 +163,22 @@ a {
     mix-blend-mode: plus-lighter;
 }
 
+.brand-label {
+    display: inline-block;
+    min-width: 11ch;
+}
+
+.brand.is-scrambling {
+    color: var(--accent-strong);
+}
+
+.brand.is-scrambling .brand-label {
+    text-shadow:
+        0 0 10px rgba(255, 191, 86, 0.55),
+        0 0 18px rgba(255, 191, 86, 0.3);
+    animation: hacker-flicker 0.12s steps(2, end) infinite;
+}
+
 .nav-links {
     display: flex;
     align-items: center;
@@ -398,6 +414,24 @@ body[data-theme="light"] .toggle-thumb {
 @keyframes blink {
     50% {
         opacity: 0;
+    }
+}
+
+@keyframes hacker-flicker {
+    0%,
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    25% {
+        opacity: 0.9;
+        transform: translateX(0.02em);
+    }
+
+    60% {
+        opacity: 0.75;
+        transform: translateX(-0.02em);
     }
 }
 
