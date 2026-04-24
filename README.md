@@ -1,11 +1,21 @@
 # Safal Karki | Portfolio
 
-An experimental, terminal-inspired personal portfolio with a dark systems aesthetic.
+React (Vite) implementation of the terminal-inspired personal portfolio.
 
 ## Live site
 
 [safalkarkey.github.io](https://safalkarkey.github.io)
 
-## Local preview
+## Local development
 
-Open `index.html` directly in a browser, or serve the directory with any static file server.
+```bash
+npm install
+npm run dev
+```
+
+## Production build
+
+```bash
+npm run build
+npm run preview
+```
