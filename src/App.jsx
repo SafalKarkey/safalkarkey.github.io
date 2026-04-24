@@ -2,11 +2,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 const terminalLines = [
     "$ init --profile safal",
-    "> loading engineering context...",
-    "> stack: web | systems | automation | ml",
-    "> mode: build, ship, iterate",
+    "> loading security engineering context...",
+    "> stack: secops | devops | security engineering",
+    "> capabilities: vapt | soc | siem | wazuh",
     "$ status --now",
-    "> ready for the next challenge",
+    "> securing systems and delivery pipelines",
 ];
 const BRAND_TEXT = "Safal Karki";
 const HACKER_GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&*+-_";
@@ -328,6 +328,7 @@ function App() {
                 <nav className="cell nav-links" aria-label="Primary navigation">
                     <a href="#about">About</a>
                     <a href="#skills">Capabilities</a>
+                    <a href="#experience">Experience</a>
                     <a href="#projects">Projects</a>
                     <a href="#education">Education</a>
                     <a href="#contact">Contact</a>
@@ -352,21 +353,20 @@ function App() {
             <main className="site-main" id="home">
                 <section className="hero shell-grid reveal">
                     <div className="cell hero-intro">
-                        <p className="kicker">Software Engineer | AI/ML Enthusiast</p>
-                        <h1>An adaptive engineer for web, automation, and intelligent systems.</h1>
+                        <p className="kicker">Security Engineer | SecOps and DevOps</p>
+                        <h1>Security Engineer</h1>
                         <p className="lede normal-case">
-                            I build software with a systems mindset: clear architecture, reliable execution, and meaningful user
-                            outcomes. My work spans product web engineering, experimental AI workflows, and practical tooling for
-                            everyday development.
+                            I currently work in SecOps engineering with hands-on experience in offensive/defensive operations, monitoring,
+                            hardening, and secure delivery. My focus is maintaining systems in an observable and secure way at scale.
                         </p>
                         <div className="hero-actions">
-                            <a className="btn btn-primary" href="#projects">Explore Projects</a>
+                            <a className="btn btn-primary" href="#experience">Explore Experience</a>
                             <a className="btn" href="/assets/Resume.pdf" download>Download Resume</a>
                         </div>
                         <ul className="quick-facts normal-case">
                             <li><span>Email</span> <a href="mailto:contact@safalkarki7.com.np">contact@safalkarki7.com.np</a></li>
                             <li><span>Location</span> Kathmandu, Nepal</li>
-                            <li><span>Status</span> Open to software engineering opportunities</li>
+                            <li><span>Status</span>Forging the shield, sharpening the sword</li>
                         </ul>
                     </div>
 
@@ -376,7 +376,8 @@ function App() {
                             <div>
                                 <p className="panel-title">Current Focus</p>
                                 <p className="normal-case">
-                                    Product-grade full-stack systems, autonomous workflows, and computer vision powered features.
+                                    SecOps, VAPT-informed remediation, SOC workflows, SIEM tuning, and DevOps security
+                                    integration.
                                 </p>
                             </div>
                         </div>
@@ -400,13 +401,12 @@ function App() {
                     </div>
                     <div className="cell section-copy normal-case">
                         <p>
-                            I approach projects by balancing engineering fundamentals with experimentation: define constraints,
-                            design robust interfaces, and iterate quickly with feedback. I enjoy building systems that become
-                            more useful over time through automation and thoughtful refinement.
+                            I am currently oriented toward Security Engineering with a SecOps-first mindset. I focus on reducing
+                            risk through proactive detection, practical hardening, and measurable operational improvements.
                         </p>
                         <p>
-                            My toolkit includes web development, Unity and C#, Linux workflows, shell scripting, and applied
-                            machine learning with CV tooling.
+                            My workflow combines SOC operations, SIEM-driven analysis, VAPT-informed remediation, and DevOps
+                            collaboration so that security becomes part of everyday engineering delivery.
                         </p>
                     </div>
                     <div className="cell section-links">
@@ -419,47 +419,121 @@ function App() {
                 <section id="skills" className="shell-grid reveal">
                     <div className="cell section-heading">
                         <p className="kicker">Capabilities</p>
-                        <h2>Technical stack</h2>
+                        <h2>Security, cloud, and platform stack</h2>
                     </div>
                     <div className="cell skill-grid">
                         <article className="feature-card">
-                            <h3>Web Engineering</h3>
+                            <h3>Security Operations and VAPT</h3>
                             <p className="normal-case">
-                                JavaScript, Node.js, modern HTML/CSS architecture, and feature-first frontend development.
+                                Threat-informed assessment and remediation across servers, web applications, and APIs.
                             </p>
                         </article>
                         <article className="feature-card">
-                            <h3>Systems &amp; Automation</h3>
+                            <h3>SOC, SIEM, and Wazuh</h3>
                             <p className="normal-case">
-                                Linux-based workflows, shell scripting, and repeatable automation for reliable delivery.
+                                Alert triage, log correlation, detection tuning, and operational monitoring using SIEM platforms.
                             </p>
                         </article>
                         <article className="feature-card">
-                            <h3>AI/ML + CV</h3>
+                            <h3>Linux and Platform Administration</h3>
                             <p className="normal-case">
-                                Practical experimentation using Python, OpenCV, and model-driven problem-solving.
+                                Linux server administration, access control, package management, and web/database server hosting.
                             </p>
                         </article>
                         <article className="feature-card">
-                            <h3>Interactive Apps</h3>
+                            <h3>Networking and Infrastructure</h3>
                             <p className="normal-case">
-                                Unity and C# for immersive simulations and interaction-heavy application experiences.
+                                Networking, virtualization, DNS, Nginx reverse proxy, SSL/TLS, and secure service exposure.
+                            </p>
+                        </article>
+                        <article className="feature-card">
+                            <h3>Containers and Orchestration</h3>
+                            <p className="normal-case">
+                                Docker containerization, image security scanning, Kubernetes operations, and Docker Swarm.
+                            </p>
+                        </article>
+                        <article className="feature-card">
+                            <h3>Cloud, IaC, and CI/CD</h3>
+                            <p className="normal-case">
+                                AWS platform services, Terraform for IaC, and GitHub Actions based delivery pipelines.
                             </p>
                         </article>
                     </div>
                     <div className="cell tags-wrap">
-                        <span>JavaScript</span>
-                        <span>Node.js</span>
-                        <span>HTML</span>
-                        <span>CSS</span>
-                        <span>C#</span>
-                        <span>Unity</span>
-                        <span>Python</span>
-                        <span>OpenCV</span>
-                        <span>C/C++</span>
+                        <span>VAPT</span>
+                        <span>SOC</span>
+                        <span>SIEM</span>
+                        <span>Wazuh</span>
+                        <span>DevOps</span>
+                        <span>DevSecOps</span>
+                        <span>CI/CD</span>
+                        <span>GitHub Actions</span>
+                        <span>Terraform</span>
+                        <span>AWS</span>
+                        <span>VPC</span>
+                        <span>EC2</span>
+                        <span>RDS</span>
+                        <span>DynamoDB</span>
+                        <span>ECS</span>
+                        <span>IAM</span>
+                        <span>S3</span>
+                        <span>CloudFront</span>
+                        <span>Route53</span>
+                        <span>CloudWatch</span>
+                        <span>Inspector</span>
+                        <span>GuardDuty</span>
+                        <span>Security Hub</span>
+                        <span>AWS WAF</span>
+                        <span>Lambda</span>
+                        <span>API Gateway</span>
+                        <span>Docker</span>
+                        <span>Kubernetes</span>
+                        <span>Docker Swarm</span>
+                        <span>Networking</span>
+                        <span>Infrastructure</span>
+                        <span>Virtualization</span>
                         <span>Linux</span>
+                        <span>Linux Administration</span>
+                        <span>Nginx</span>
+                        <span>DNS</span>
+                        <span>Reverse Proxy</span>
+                        <span>SSL/TLS</span>
                         <span>Bash</span>
+                        <span>Monitoring</span>
+                        <span>Incident Response</span>
+                        <span>CTF</span>
+                        <span>OSINT</span>
+                        <span>Node.js</span>
+                        <span>React</span>
+                        <span>PostgreSQL</span>
+                        <span>JavaScript</span>
                         <span>Git</span>
+                    </div>
+                </section>
+
+                <section id="experience" className="shell-grid reveal">
+                    <div className="cell section-heading">
+                        <p className="kicker">Experience</p>
+                        <h2>Professional timeline</h2>
+                    </div>
+                    <div className="cell timeline">
+                        <article className="timeline-item">
+                            <p>Aug 2025 - Present</p>
+                            <h3>Associate Software Engineer (SecOps)</h3>
+                            <p className="normal-case">Leapfrog Technology, Inc. | Kathmandu, Bagmati, Nepal</p>
+                        </article>
+                        <article className="timeline-item">
+                            <p>Jun 2025 - Aug 2025</p>
+                            <h3>DevOps and SecOps Fellow (Internship)</h3>
+                            <p className="normal-case">Leapfrog Technology, Inc. | Kathmandu, Bagmati, Nepal</p>
+                        </article>
+                    </div>
+                    <div className="cell timeline-note normal-case">
+                        <p>
+                            Regularly conducting VAPT across projects, Monitoring through SIEM, Incident Response.                            
+                        </p>
+                        <p>Hands-on experience with Networking, virtualization, Linux/server
+                        administration, secure application hosting, and containerized deployments. </p>
                     </div>
                 </section>
 
@@ -573,7 +647,7 @@ function App() {
 
             <footer className="site-footer shell-grid">
                 <p className="cell">Safal Karki</p>
-                <p className="cell normal-case">Software Engineering - AI/ML - Systems Thinking</p>
+                <p className="cell normal-case">Security Engineering - SecOps - DevOps</p>
                 <p className="cell">(c) 2026</p>
             </footer>
         </>
