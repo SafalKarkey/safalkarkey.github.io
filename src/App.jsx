@@ -560,7 +560,7 @@ function App() {
                     </div>
                     <div className="cell timeline-note normal-case">
                         <p>
-                            Regularly conducting VAPT across projects, Monitoring through SIEM, Incident Response.                            
+                            Regularly conducting VAPT across projects and infrastructures, Monitoring through SIEM, Incident Response.                            
                         </p>
                         <p>Hands-on experience with Networking, virtualization, Linux/server
                         administration, secure application hosting, and containerized deployments. </p>
