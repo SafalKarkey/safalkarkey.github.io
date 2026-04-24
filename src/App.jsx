@@ -303,6 +303,36 @@ function App() {
         };
     }, []);
 
+    useEffect(() => {
+        const devtoolsKeySet = new Set(["i", "j", "c", "k"]);
+
+        const blockDevtoolsShortcuts = (event) => {
+            const key = event.key.toLowerCase();
+            const usesCommandOrControl = event.ctrlKey || event.metaKey;
+            const isF12 = key === "f12";
+            const isDevtoolsChord = usesCommandOrControl && event.shiftKey && devtoolsKeySet.has(key);
+            const isViewSource = usesCommandOrControl && key === "u";
+            const isMacAltChord = event.metaKey && event.altKey && devtoolsKeySet.has(key);
+
+            if (isF12 || isDevtoolsChord || isViewSource || isMacAltChord) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        };
+
+        const blockContextMenu = (event) => {
+            event.preventDefault();
+        };
+
+        window.addEventListener("keydown", blockDevtoolsShortcuts, true);
+        window.addEventListener("contextmenu", blockContextMenu);
+
+        return () => {
+            window.removeEventListener("keydown", blockDevtoolsShortcuts, true);
+            window.removeEventListener("contextmenu", blockContextMenu);
+        };
+    }, []);
+
     const nextTheme = theme === "light" ? "dark" : "light";
 
     return (
