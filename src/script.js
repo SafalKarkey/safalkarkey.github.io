@@ -3,6 +3,7 @@ const themeToggle = document.getElementById("theme-toggle");
 const themeLabel = themeToggle?.querySelector(".toggle-label");
 const terminalOutput = document.getElementById("terminal-output");
 const cursorGlow = document.getElementById("cursor-glow");
+const siteHeader = document.querySelector(".site-header");
 
 const savedTheme = localStorage.getItem("portfolio-theme");
 if (savedTheme === "dark" || savedTheme === "light") {
@@ -27,6 +28,20 @@ themeToggle?.addEventListener("click", () => {
     localStorage.setItem("portfolio-theme", nextTheme);
     syncThemeUI();
 });
+
+function syncHeaderScrollOffset() {
+    if (!siteHeader) {
+        return;
+    }
+
+    const topOffset = parseFloat(window.getComputedStyle(siteHeader).top) || 0;
+    const headerHeight = siteHeader.getBoundingClientRect().height;
+    const totalOffset = Math.ceil(topOffset + headerHeight);
+    document.documentElement.style.setProperty("--header-scroll-offset", `${totalOffset}px`);
+}
+
+syncHeaderScrollOffset();
+window.addEventListener("resize", syncHeaderScrollOffset);
 
 document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
     anchor.addEventListener("click", (event) => {
