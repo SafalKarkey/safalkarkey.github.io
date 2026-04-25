@@ -447,6 +447,7 @@ body[data-theme="light"] .toggle-thumb {
 #experience,
 #projects,
 #education,
+#recognition,
 #contact,
 .site-footer {
     grid-template-columns: minmax(170px, 0.7fr) minmax(0, 1.6fr) minmax(170px, 0.85fr);
@@ -676,6 +677,7 @@ body[data-theme="light"] .toggle-thumb {
     #experience,
     #projects,
     #education,
+    #recognition,
     #contact,
     .site-footer {
         grid-template-columns: 1fr;

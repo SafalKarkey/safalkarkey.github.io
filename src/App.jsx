@@ -374,6 +374,8 @@ function App() {
 
     useEffect(() => {
         const devtoolsKeySet = new Set(["i", "j", "c", "k"]);
+        const devtoolsDetectThreshold = 160;
+        let wasDevtoolsOpen = false;
 
         const blockDevtoolsShortcuts = (event) => {
             const key = event.key.toLowerCase();
@@ -393,12 +395,29 @@ function App() {
             event.preventDefault();
         };
 
+        const detectDevtoolsAndLogEasterEgg = () => {
+            const widthGap = window.outerWidth - window.innerWidth;
+            const heightGap = window.outerHeight - window.innerHeight;
+            const isDevtoolsOpen = widthGap > devtoolsDetectThreshold || heightGap > devtoolsDetectThreshold;
+
+            if (isDevtoolsOpen && !wasDevtoolsOpen) {
+                console.log("hehe hello there. just a little easter egg");
+            }
+
+            wasDevtoolsOpen = isDevtoolsOpen;
+        };
+
         window.addEventListener("keydown", blockDevtoolsShortcuts, true);
         window.addEventListener("contextmenu", blockContextMenu);
+        window.addEventListener("resize", detectDevtoolsAndLogEasterEgg);
+        const devtoolsDetectInterval = window.setInterval(detectDevtoolsAndLogEasterEgg, 1000);
+        detectDevtoolsAndLogEasterEgg();
 
         return () => {
             window.removeEventListener("keydown", blockDevtoolsShortcuts, true);
             window.removeEventListener("contextmenu", blockContextMenu);
+            window.removeEventListener("resize", detectDevtoolsAndLogEasterEgg);
+            clearInterval(devtoolsDetectInterval);
         };
     }, []);
 
@@ -430,6 +449,7 @@ function App() {
                     <a href="#experience">Experience</a>
                     <a href="#projects">Projects</a>
                     <a href="#education">Education</a>
+                    <a href="#recognition">Recognition</a>
                     <a href="#contact">Contact</a>
                 </nav>
                 <div className="cell header-tools">
@@ -719,6 +739,24 @@ function App() {
                     </div>
                     <div className="cell timeline-note normal-case">
                         Strong core in engineering fundamentals, signal processing context, and applied software problem solving.
+                    </div>
+                </section>
+
+                <section id="recognition" className="shell-grid reveal">
+                    <div className="cell section-heading">
+                        <p className="kicker">Recognition</p>
+                        <h2>Security acknowledgements</h2>
+                    </div>
+                    <div className="cell section-copy normal-case">
+                        <p>
+                            Listed as a Proton Mail Security Contributor for helping improve Proton Mail security through
+                            responsible disclosure.
+                        </p>
+                    </div>
+                    <div className="cell section-links">
+                        <a href="https://proton.me/blog/protonmail-security-contributors" target="_blank" rel="noopener noreferrer">
+                            Proton Mail Security Contributors -&gt;
+                        </a>
                     </div>
                 </section>
 
