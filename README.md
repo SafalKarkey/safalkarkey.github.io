@@ -4,7 +4,7 @@ React (Vite) implementation of the terminal-inspired personal portfolio.
 
 ## Live site
 
-[safalkarkey.github.io](https://safalkarkey.github.io)
+[safalkarki7.com.np](https://safalkarki7.com.np)
 
 ## Local development
 
