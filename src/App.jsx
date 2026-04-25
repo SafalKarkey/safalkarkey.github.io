@@ -126,6 +126,75 @@ function App() {
     }, []);
 
     useEffect(() => {
+        const header = siteHeaderRef.current;
+        if (!header) {
+            return undefined;
+        }
+
+        const mobileMediaQuery = window.matchMedia("(max-width: 1100px)");
+        let lastScrollY = window.scrollY;
+        let rafId = null;
+
+        const setHeaderHidden = (shouldHide) => {
+            header.classList.toggle("mobile-header-hidden", shouldHide);
+        };
+
+        const syncHeaderVisibility = () => {
+            const currentScrollY = window.scrollY;
+            const scrollDelta = currentScrollY - lastScrollY;
+            const nearTop = currentScrollY < 28;
+
+            if (!mobileMediaQuery.matches || nearTop || scrollDelta < -6) {
+                setHeaderHidden(false);
+            } else if (scrollDelta > 6) {
+                setHeaderHidden(true);
+            }
+
+            lastScrollY = currentScrollY;
+            rafId = null;
+        };
+
+        const onScroll = () => {
+            if (rafId !== null) {
+                return;
+            }
+
+            rafId = window.requestAnimationFrame(syncHeaderVisibility);
+        };
+
+        const onViewportChange = () => {
+            if (!mobileMediaQuery.matches) {
+                setHeaderHidden(false);
+            }
+            lastScrollY = window.scrollY;
+        };
+
+        window.addEventListener("scroll", onScroll, { passive: true });
+        window.addEventListener("resize", onViewportChange);
+        if (typeof mobileMediaQuery.addEventListener === "function") {
+            mobileMediaQuery.addEventListener("change", onViewportChange);
+        } else {
+            mobileMediaQuery.addListener(onViewportChange);
+        }
+
+        onViewportChange();
+
+        return () => {
+            window.removeEventListener("scroll", onScroll);
+            window.removeEventListener("resize", onViewportChange);
+            if (typeof mobileMediaQuery.removeEventListener === "function") {
+                mobileMediaQuery.removeEventListener("change", onViewportChange);
+            } else {
+                mobileMediaQuery.removeListener(onViewportChange);
+            }
+            if (rafId !== null) {
+                window.cancelAnimationFrame(rafId);
+            }
+            setHeaderHidden(false);
+        };
+    }, []);
+
+    useEffect(() => {
         const anchorHandlers = [];
         const anchors = document.querySelectorAll('a[href^="#"]');
 
@@ -386,8 +455,7 @@ function App() {
                         <p className="kicker">Security Engineer | SecOps and DevOps</p>
                         <h1>Security Engineer</h1>
                         <p className="lede normal-case">
-                            I currently work in SecOps engineering with hands-on experience in offensive/defensive operations, monitoring,
-                            hardening, and secure delivery. My focus is maintaining systems in an observable and secure way at scale.
+                            Experienced in SecOps, VAPT-informed remediation, Penetration testing, SOC workflows, SIEM tuning, and DevOps security integration.
                         </p>
                         <div className="hero-actions">
                             <a className="btn btn-primary" href="#experience">Explore Experience</a>
@@ -404,10 +472,10 @@ function App() {
                         <div className="profile-panel">
                             <img src="/assets/backsafal.jpg" alt="Safal Karki portrait" />
                             <div>
-                                <p className="panel-title">Current Focus</p>
+                                <p className="panel-title">$whoami</p>
                                 <p className="normal-case">
-                                    SecOps, VAPT-informed remediation, SOC workflows, SIEM tuning, and DevOps security
-                                    integration.
+                                    I am a SecOps engineer with hands-on experience in offensive/defensive operations.
+                            My focus is maintaining systems in an observable and secure way at scale.
                                 </p>
                             </div>
                         </div>
