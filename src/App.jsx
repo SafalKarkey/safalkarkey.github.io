@@ -9,6 +9,7 @@ const terminalLines = [
     "> securing systems and delivery pipelines",
 ];
 const BRAND_TEXT = "Safal Karki";
+const INTRO_TITLE = "Security Engineer";
 const HACKER_GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&*+-_";
 
 function escapeHtml(text) {
@@ -29,6 +30,9 @@ function App() {
     });
     const [brandDisplayText, setBrandDisplayText] = useState(BRAND_TEXT);
     const [isBrandScrambling, setIsBrandScrambling] = useState(false);
+    const [introNameDisplay, setIntroNameDisplay] = useState("");
+    const [introTitleDisplay, setIntroTitleDisplay] = useState("");
+    const [introPhase, setIntroPhase] = useState("active");
 
     const siteHeaderRef = useRef(null);
     const terminalOutputRef = useRef(null);
@@ -79,6 +83,77 @@ function App() {
         stopBrandScramble();
         setBrandDisplayText(BRAND_TEXT);
     }, [stopBrandScramble]);
+
+    useEffect(() => {
+        const timers = [];
+        const intervals = [];
+        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        const scrambleText = (targetText, setter, onComplete) => {
+            let iteration = 0;
+            const step = prefersReducedMotion ? 1 : 0.34;
+            const tick = prefersReducedMotion ? 14 : 30;
+            const intervalId = window.setInterval(() => {
+                setter(
+                    targetText
+                        .split("")
+                        .map((character, index) => {
+                            if (character === " ") {
+                                return " ";
+                            }
+
+                            if (index < iteration) {
+                                return targetText[index];
+                            }
+
+                            const randomIndex = Math.floor(Math.random() * HACKER_GLYPHS.length);
+                            return HACKER_GLYPHS[randomIndex];
+                        })
+                        .join("")
+                );
+
+                iteration += step;
+                if (iteration >= targetText.length) {
+                    clearInterval(intervalId);
+                    setter(targetText);
+                    onComplete?.();
+                }
+            }, tick);
+
+            intervals.push(intervalId);
+        };
+
+        scrambleText(BRAND_TEXT, setIntroNameDisplay, () => {
+            const titleTimer = window.setTimeout(() => {
+                scrambleText(INTRO_TITLE, setIntroTitleDisplay, () => {
+                    const exitTimer = window.setTimeout(() => {
+                        setIntroPhase("exiting");
+                    }, prefersReducedMotion ? 80 : 320);
+                    const doneTimer = window.setTimeout(() => {
+                        setIntroPhase("done");
+                    }, prefersReducedMotion ? 200 : 900);
+
+                    timers.push(exitTimer, doneTimer);
+                });
+            }, prefersReducedMotion ? 40 : 120);
+
+            timers.push(titleTimer);
+        });
+
+        return () => {
+            timers.forEach((timer) => clearTimeout(timer));
+            intervals.forEach((interval) => clearInterval(interval));
+        };
+    }, []);
+
+    useEffect(() => {
+        const isIntroActive = introPhase !== "done";
+        document.body.classList.toggle("intro-active", isIntroActive);
+
+        return () => {
+            document.body.classList.remove("intro-active");
+        };
+    }, [introPhase]);
 
     useEffect(() => {
         document.body.dataset.theme = theme;
@@ -425,51 +500,67 @@ function App() {
 
     return (
         <>
-            <div className="ambient" aria-hidden="true">
-                <div className="ambient-noise"></div>
-                <div className="ambient-scanlines"></div>
-                <div id="cursor-glow" className="cursor-glow" ref={cursorGlowRef}></div>
-            </div>
-
-            <header className="site-header shell-grid" ref={siteHeaderRef}>
-                <a
-                    href="#home"
-                    className={`brand cell${isBrandScrambling ? " is-scrambling" : ""}`}
-                    aria-label={BRAND_TEXT}
-                    onMouseEnter={startBrandScramble}
-                    onMouseLeave={resetBrandText}
-                    onFocus={startBrandScramble}
-                    onBlur={resetBrandText}
-                >
-                    <span className="brand-label">{brandDisplayText}</span>
-                </a>
-                <nav className="cell nav-links" aria-label="Primary navigation">
-                    <a href="#about">About</a>
-                    <a href="#skills">Capabilities</a>
-                    <a href="#experience">Experience</a>
-                    <a href="#projects">Projects</a>
-                    <a href="#education">Education</a>
-                    <a href="#recognition">Recognition</a>
-                    <a href="#contact">Contact</a>
-                </nav>
-                <div className="cell header-tools">
-                    <button
-                        id="theme-toggle"
-                        className="theme-toggle"
-                        type="button"
-                        aria-label="Toggle theme mode"
-                        aria-pressed={theme === "light"}
-                        onClick={() => setTheme(nextTheme)}
-                    >
-                        <span className="toggle-track">
-                            <span className="toggle-thumb"></span>
-                        </span>
-                        <span className="toggle-label">{theme}</span>
-                    </button>
+            {introPhase !== "done" && (
+                <div className={`intro-overlay${introPhase === "exiting" ? " is-exiting" : ""}`}>
+                    <div className="intro-noise" aria-hidden="true"></div>
+                    <div className="intro-scanlines" aria-hidden="true"></div>
+                    <div className="intro-modal">
+                        <p className="intro-kicker">Booting profile</p>
+                        <h1 className="intro-name" data-text={introNameDisplay}>{introNameDisplay}</h1>
+                        <p className="intro-title" data-text={introTitleDisplay}>
+                            {introTitleDisplay}
+                            <span className="intro-cursor" aria-hidden="true"></span>
+                        </p>
+                    </div>
                 </div>
-            </header>
+            )}
 
-            <main className="site-main" id="home">
+            <div className={`portfolio-shell${introPhase === "done" ? " is-ready" : ""}`}>
+                <div className="ambient" aria-hidden="true">
+                    <div className="ambient-noise"></div>
+                    <div className="ambient-scanlines"></div>
+                    <div id="cursor-glow" className="cursor-glow" ref={cursorGlowRef}></div>
+                </div>
+
+                <header className="site-header shell-grid" ref={siteHeaderRef}>
+                    <a
+                        href="#home"
+                        className={`brand cell${isBrandScrambling ? " is-scrambling" : ""}`}
+                        aria-label={BRAND_TEXT}
+                        onMouseEnter={startBrandScramble}
+                        onMouseLeave={resetBrandText}
+                        onFocus={startBrandScramble}
+                        onBlur={resetBrandText}
+                    >
+                        <span className="brand-label">{brandDisplayText}</span>
+                    </a>
+                    <nav className="cell nav-links" aria-label="Primary navigation">
+                        <a href="#about">About</a>
+                        <a href="#skills">Capabilities</a>
+                        <a href="#experience">Experience</a>
+                        <a href="#projects">Projects</a>
+                        <a href="#education">Education</a>
+                        <a href="#recognition">Recognition</a>
+                        <a href="#contact">Contact</a>
+                    </nav>
+                    <div className="cell header-tools">
+                        <button
+                            id="theme-toggle"
+                            className="theme-toggle"
+                            type="button"
+                            aria-label="Toggle theme mode"
+                            aria-pressed={theme === "light"}
+                            onClick={() => setTheme(nextTheme)}
+                        >
+                            <span className="toggle-track">
+                                <span className="toggle-thumb"></span>
+                            </span>
+                            <span className="toggle-label">{theme}</span>
+                        </button>
+                    </div>
+                </header>
+
+                <main className="site-main" id="home">
                 <section className="hero shell-grid reveal">
                     <div className="cell hero-intro">
                         <p className="kicker">Security Engineer | SecOps and DevOps</p>
@@ -779,13 +870,14 @@ function App() {
                         <a href="https://x.com/safalkarkey" target="_blank" rel="noopener noreferrer">X / Twitter -&gt;</a>
                     </div>
                 </section>
-            </main>
+                </main>
 
-            <footer className="site-footer shell-grid">
-                <p className="cell">Safal Karki</p>
-                <p className="cell normal-case">Security Engineering - SecOps - DevOps</p>
-                <p className="cell">(c) 2026</p>
-            </footer>
+                <footer className="site-footer shell-grid">
+                    <p className="cell">Safal Karki</p>
+                    <p className="cell normal-case">Security Engineering - SecOps - DevOps</p>
+                    <p className="cell">(c) 2026</p>
+                </footer>
+            </div>
         </>
     );
 }

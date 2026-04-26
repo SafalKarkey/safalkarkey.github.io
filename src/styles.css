@@ -55,6 +55,143 @@ body {
         linear-gradient(160deg, var(--bg), var(--bg-elev));
 }
 
+body.intro-active {
+    overflow: hidden;
+}
+
+.portfolio-shell {
+    opacity: 0;
+    transform: translateY(10px) scale(1.01);
+    filter: blur(3px);
+    transition: opacity 0.55s ease, transform 0.55s ease, filter 0.55s ease;
+}
+
+.portfolio-shell.is-ready {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+}
+
+.intro-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background:
+        radial-gradient(circle at 50% 18%, rgba(255, 191, 86, 0.18), transparent 45%),
+        linear-gradient(160deg, #010d0d 0%, #041818 40%, #081e1e 100%);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    transition: opacity 0.45s ease, visibility 0.45s ease;
+}
+
+.intro-overlay.is-exiting {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.intro-noise,
+.intro-scanlines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.intro-noise {
+    background-image:
+        radial-gradient(circle at 35% 20%, rgba(255, 255, 255, 0.06) 0.8px, transparent 0.8px),
+        radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.04) 0.8px, transparent 0.8px);
+    background-size: 3px 3px, 4px 4px;
+    opacity: 0.45;
+    mix-blend-mode: soft-light;
+}
+
+.intro-scanlines {
+    background: repeating-linear-gradient(to bottom,
+            rgba(255, 255, 255, 0.06) 0,
+            rgba(255, 255, 255, 0.06) 1px,
+            transparent 1px,
+            transparent 3px);
+    opacity: 0.14;
+}
+
+.intro-modal {
+    position: relative;
+    width: min(760px, 88vw);
+    border: 1px solid rgba(255, 230, 199, 0.35);
+    background: rgba(2, 20, 20, 0.84);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+    padding: clamp(1.4rem, 3vw, 2.4rem);
+    text-align: center;
+    backdrop-filter: blur(6px);
+}
+
+.intro-kicker {
+    color: var(--accent-strong);
+    font-size: 0.68rem;
+    margin-bottom: 0.9rem;
+}
+
+.intro-name,
+.intro-title {
+    position: relative;
+}
+
+.intro-name {
+    font-size: clamp(1.8rem, 6vw, 4.2rem);
+    line-height: 1.04;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    text-shadow:
+        0 0 12px rgba(255, 191, 86, 0.5),
+        0 0 22px rgba(255, 191, 86, 0.2);
+    animation: hacker-flicker 0.14s steps(2, end) infinite;
+}
+
+.intro-title {
+    margin-top: 0.8rem;
+    font-size: clamp(0.86rem, 2.25vw, 1.38rem);
+    color: var(--muted);
+    letter-spacing: 0.14em;
+}
+
+.intro-name::before,
+.intro-name::after,
+.intro-title::before,
+.intro-title::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+.intro-name::before,
+.intro-title::before {
+    color: #96fff5;
+    transform: translateX(-0.03em);
+    clip-path: polygon(0 15%, 100% 8%, 100% 48%, 0 56%);
+    animation: glitch-slice 1.6s steps(2, end) infinite;
+}
+
+.intro-name::after,
+.intro-title::after {
+    color: #ffc6f0;
+    transform: translateX(0.03em);
+    clip-path: polygon(0 58%, 100% 50%, 100% 88%, 0 96%);
+    animation: glitch-slice 1.25s steps(2, end) infinite reverse;
+}
+
+.intro-cursor {
+    display: inline-block;
+    width: 0.8ch;
+    height: 1.05em;
+    margin-left: 4px;
+    background: var(--accent);
+    vertical-align: text-bottom;
+    animation: blink 1s steps(2, end) infinite;
+}
+
 a {
     color: inherit;
     text-decoration: none;
@@ -442,6 +579,25 @@ body[data-theme="light"] .toggle-thumb {
     }
 }
 
+@keyframes glitch-slice {
+    0%,
+    22%,
+    100% {
+        opacity: 0;
+        transform: translateX(0);
+    }
+
+    26% {
+        opacity: 0.4;
+        transform: translateX(-0.02em);
+    }
+
+    32% {
+        opacity: 0.18;
+        transform: translateX(0.02em);
+    }
+}
+
 #about,
 #skills,
 #experience,
@@ -699,6 +855,24 @@ body[data-theme="light"] .toggle-thumb {
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .portfolio-shell {
+        transition: none;
+        transform: none;
+        filter: none;
+    }
+
+    .intro-overlay {
+        transition: none;
+    }
+
+    .intro-name,
+    .intro-name::before,
+    .intro-name::after,
+    .intro-title::before,
+    .intro-title::after {
+        animation: none;
+    }
+
     .site-header {
         transition: none;
     }
