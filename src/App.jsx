@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Component as EtherealShadow } from "@/components/ui/etheral-shadow";
+import { SpotlightCard } from "@/components/ui/spotlight-card";
+import { ScrambleText } from "@/components/ui/scramble-text";
 
 const terminalLines = [
     "$ init --profile safal",
@@ -36,7 +39,6 @@ function App() {
 
     const siteHeaderRef = useRef(null);
     const terminalOutputRef = useRef(null);
-    const cursorGlowRef = useRef(null);
     const brandScrambleIntervalRef = useRef(null);
 
     const stopBrandScramble = useCallback(() => {
@@ -407,47 +409,6 @@ function App() {
     }, []);
 
     useEffect(() => {
-        const cursorGlow = cursorGlowRef.current;
-        if (!cursorGlow) {
-            return undefined;
-        }
-
-        const finePointer = window.matchMedia("(pointer: fine)").matches;
-        if (!finePointer) {
-            cursorGlow.style.display = "none";
-            return undefined;
-        }
-
-        let targetX = window.innerWidth / 2;
-        let targetY = window.innerHeight / 2;
-        let currentX = targetX;
-        let currentY = targetY;
-        let animationFrameId;
-
-        const onPointerMove = (event) => {
-            targetX = event.clientX;
-            targetY = event.clientY;
-        };
-
-        const animateGlow = () => {
-            currentX += (targetX - currentX) * 0.16;
-            currentY += (targetY - currentY) * 0.16;
-            cursorGlow.style.transform = `translate(${currentX}px, ${currentY}px) translate(-50%, -50%)`;
-            animationFrameId = window.requestAnimationFrame(animateGlow);
-        };
-
-        window.addEventListener("pointermove", onPointerMove);
-        animateGlow();
-
-        return () => {
-            window.removeEventListener("pointermove", onPointerMove);
-            if (animationFrameId) {
-                window.cancelAnimationFrame(animationFrameId);
-            }
-        };
-    }, []);
-
-    useEffect(() => {
         const devtoolsKeySet = new Set(["i", "j", "c", "k"]);
         const devtoolsDetectThreshold = 160;
         let wasDevtoolsOpen = false;
@@ -515,13 +476,19 @@ function App() {
                 </div>
             )}
 
-            <div className={`portfolio-shell${introPhase === "done" ? " is-ready" : ""}`}>
-                <div className="ambient" aria-hidden="true">
-                    <div className="ambient-noise"></div>
-                    <div className="ambient-scanlines"></div>
-                    <div id="cursor-glow" className="cursor-glow" ref={cursorGlowRef}></div>
-                </div>
+            <div className="ambient" aria-hidden="true">
+                <EtherealShadow
+                    color="rgba(224, 11, 11, 0.65)"
+                    animation={{ scale: 80, speed: 250 }}
+                    noise={{ opacity: 0.25, scale: 1.0 }}
+                    sizing="stretch"
+                    title={null}
+                />
+                <div className="ambient-noise"></div>
+                <div className="ambient-scanlines"></div>
+            </div>
 
+            <div className={`portfolio-shell${introPhase === "done" ? " is-ready" : ""}`}>
                 <header className="site-header shell-grid" ref={siteHeaderRef}>
                     <a
                         href="#home"
@@ -574,8 +541,21 @@ function App() {
                         </div>
                         <ul className="quick-facts normal-case">
                             <li><span>Email</span> <a href="mailto:contact@safalkarki7.com.np">contact@safalkarki7.com.np</a></li>
-                            <li><span>Location</span> Kathmandu, Nepal</li>
-                            <li><span>Status</span>Forging the shield, sharpening the sword</li>
+                            <li><span>Location</span> Nepal</li>
+                            <li>
+                                <ScrambleText
+                                    quotes={[
+                                        "He who has a why to live can bear almost any how. - Nietzsche",
+                                        "The happiness of your life depends upon the quality of your thoughts. - Marcus Aurelius",
+                                        "In a time of deceit telling the truth is a revolutionary act. - Orwell",
+                                        "What does not kill me, makes me stronger. - Nietzsche",
+                                        "Waste no more time arguing about what a good man should be. Be one. - Marcus Aurelius",
+                                        "Freedom is the freedom to say that two plus two make four. - Orwell"
+                                    ]}
+                                    cycleDuration={5000}
+                                    transitionDuration={1500}
+                                />
+                            </li>
                         </ul>
                     </div>
 
@@ -631,42 +611,42 @@ function App() {
                         <h2>Security, cloud, and platform stack</h2>
                     </div>
                     <div className="cell skill-grid">
-                        <article className="feature-card">
+                        <SpotlightCard as="article" className="feature-card">
                             <h3>Security Operations and VAPT</h3>
                             <p className="normal-case">
                                 Threat-informed assessment and remediation across servers, web applications, and APIs.
                             </p>
-                        </article>
-                        <article className="feature-card">
+                        </SpotlightCard>
+                        <SpotlightCard as="article" className="feature-card">
                             <h3>SOC, SIEM, and Wazuh</h3>
                             <p className="normal-case">
                                 Alert triage, log correlation, detection tuning, and operational monitoring using SIEM platforms.
                             </p>
-                        </article>
-                        <article className="feature-card">
+                        </SpotlightCard>
+                        <SpotlightCard as="article" className="feature-card">
                             <h3>Linux and Platform Administration</h3>
                             <p className="normal-case">
                                 Linux server administration, access control, package management, and web/database server hosting.
                             </p>
-                        </article>
-                        <article className="feature-card">
+                        </SpotlightCard>
+                        <SpotlightCard as="article" className="feature-card">
                             <h3>Networking and Infrastructure</h3>
                             <p className="normal-case">
                                 Networking, virtualization, DNS, Nginx reverse proxy, SSL/TLS, and secure service exposure.
                             </p>
-                        </article>
-                        <article className="feature-card">
+                        </SpotlightCard>
+                        <SpotlightCard as="article" className="feature-card">
                             <h3>Containers and Orchestration</h3>
                             <p className="normal-case">
                                 Docker containerization, image security scanning, Kubernetes operations, and Docker Swarm.
                             </p>
-                        </article>
-                        <article className="feature-card">
+                        </SpotlightCard>
+                        <SpotlightCard as="article" className="feature-card">
                             <h3>Cloud, IaC, and CI/CD</h3>
                             <p className="normal-case">
                                 AWS platform services, Terraform for IaC, and GitHub Actions based delivery pipelines.
                             </p>
-                        </article>
+                        </SpotlightCard>
                     </div>
                     <div className="cell tags-wrap">
                         <span>VAPT</span>
@@ -752,7 +732,7 @@ function App() {
                         <h2>Selected work</h2>
                     </div>
                     <div className="cell projects-grid">
-                        <article className="project-card">
+                        <SpotlightCard as="article" className="project-card">
                             <img src="/assets/projects/hand.png" alt="Virtual Hand Simulation preview" />
                             <div className="project-body">
                                 <h3>Virtual Hand Simulation</h3>
@@ -763,9 +743,9 @@ function App() {
                                     <a href="https://github.com/SafalKarkey/VHand" target="_blank" rel="noopener noreferrer">Code -&gt;</a>
                                 </div>
                             </div>
-                        </article>
+                        </SpotlightCard>
 
-                        <article className="project-card">
+                        <SpotlightCard as="article" className="project-card">
                             <img src="/assets/projects/flappy.png" alt="Flappy-NP project preview" />
                             <div className="project-body">
                                 <h3>Flappy-NP</h3>
@@ -777,9 +757,9 @@ function App() {
                                     <a href="https://github.com/SafalKarkey/flappy-np" target="_blank" rel="noopener noreferrer">Code -&gt;</a>
                                 </div>
                             </div>
-                        </article>
+                        </SpotlightCard>
 
-                        <article className="project-card">
+                        <SpotlightCard as="article" className="project-card">
                             <img src="/assets/projects/robot.png" alt="Humanoid Robot project preview" />
                             <div className="project-body">
                                 <h3>Humanoid Robot</h3>
@@ -791,9 +771,9 @@ function App() {
                                     <a href="https://www.youtube.com/watch?v=2A26gmyEhpI" target="_blank" rel="noopener noreferrer">Demo -&gt;</a>
                                 </div>
                             </div>
-                        </article>
+                        </SpotlightCard>
 
-                        <article className="project-card">
+                        <SpotlightCard as="article" className="project-card">
                             <img src="/assets/projects/census.png" alt="Census Data Visualization preview" />
                             <div className="project-body">
                                 <h3>Census Visualization</h3>
@@ -804,7 +784,7 @@ function App() {
                                     <a href="https://safalkarkey.github.io/Census-Visualization/" target="_blank" rel="noopener noreferrer">Website -&gt;</a>
                                 </div>
                             </div>
-                        </article>
+                        </SpotlightCard>
                     </div>
                     <div className="cell project-note normal-case">
                         Built with a balance of experimentation and practical delivery across software, simulation, and data
