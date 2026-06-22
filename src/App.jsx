@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Component as EtherealShadow } from "@/components/ui/etheral-shadow";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { ScrambleText } from "@/components/ui/scramble-text";
 
@@ -15,11 +14,82 @@ const BRAND_TEXT = "Safal Karki";
 const INTRO_TITLE = "Security Engineer";
 const HACKER_GLYPHS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&*+-_";
 
+const RADAR_BLIPS = [
+    { label: "SIEM", x: 72, y: 34 },
+    { label: "VAPT", x: 30, y: 28 },
+    { label: "Wazuh", x: 64, y: 70 },
+    { label: "K8s", x: 38, y: 64 },
+    { label: "AWS", x: 80, y: 58 },
+    { label: "Terraform", x: 22, y: 52 },
+];
+
+const TAGS = [
+    "VAPT", "SOC", "SIEM", "Wazuh", "DevOps", "DevSecOps", "CI/CD",
+    "GitHub Actions", "Terraform", "AWS", "VPC", "EC2", "RDS", "DynamoDB",
+    "ECS", "IAM", "S3", "CloudFront", "Route53", "CloudWatch", "Inspector",
+    "GuardDuty", "Security Hub", "AWS WAF", "Lambda", "API Gateway", "Docker",
+    "Kubernetes", "Docker Swarm", "Networking", "Infrastructure", "Virtualization",
+    "Linux", "Linux Administration", "Nginx", "DNS", "Reverse Proxy", "SSL/TLS",
+    "Bash", "Monitoring", "Incident Response", "CTF", "OSINT", "Node.js", "React",
+    "PostgreSQL", "JavaScript", "Git",
+];
+
 function escapeHtml(text) {
     return text
         .replaceAll("&", "&amp;")
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;");
+}
+
+function Tag({ label }) {
+    const [display, setDisplay] = useState(label);
+    const intervalRef = useRef(null);
+    const isHovering = useRef(false);
+
+    const clear = useCallback(() => {
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+        }
+    }, []);
+
+    const onEnter = useCallback(() => {
+        isHovering.current = true;
+        clear();
+        let iteration = 0;
+        intervalRef.current = window.setInterval(() => {
+            if (!isHovering.current) return;
+            setDisplay(
+                label
+                    .split("")
+                    .map((character, index) => {
+                        if (character === " ") return " ";
+                        if (index < iteration) return label[index];
+                        return HACKER_GLYPHS[Math.floor(Math.random() * HACKER_GLYPHS.length)];
+                    })
+                    .join("")
+            );
+            iteration += 0.5;
+            if (iteration >= label.length) {
+                clear();
+                setDisplay(label);
+            }
+        }, 28);
+    }, [label, clear]);
+
+    const onLeave = useCallback(() => {
+        isHovering.current = false;
+        clear();
+        setDisplay(label);
+    }, [label, clear]);
+
+    useEffect(() => () => clear(), [clear]);
+
+    return (
+        <span onMouseEnter={onEnter} onMouseLeave={onLeave} onFocus={onEnter} onBlur={onLeave}>
+            {display}
+        </span>
+    );
 }
 
 function App() {
@@ -36,10 +106,13 @@ function App() {
     const [introNameDisplay, setIntroNameDisplay] = useState("");
     const [introTitleDisplay, setIntroTitleDisplay] = useState("");
     const [introPhase, setIntroPhase] = useState("active");
+    const [scrollProgress, setScrollProgress] = useState(0);
 
     const siteHeaderRef = useRef(null);
     const terminalOutputRef = useRef(null);
     const brandScrambleIntervalRef = useRef(null);
+    const cursorGlowRef = useRef(null);
+    const radarRef = useRef(null);
 
     const stopBrandScramble = useCallback(() => {
         if (brandScrambleIntervalRef.current) {
@@ -408,67 +481,142 @@ function App() {
         };
     }, []);
 
+    // Cursor-following signal glow + scroll progress.
     useEffect(() => {
-        const devtoolsKeySet = new Set(["i", "j", "c", "k"]);
-        const devtoolsDetectThreshold = 160;
-        let wasDevtoolsOpen = false;
+        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const isTouch = window.matchMedia("(pointer: coarse)").matches;
+        const glow = cursorGlowRef.current;
+        if (prefersReducedMotion || isTouch || !glow) {
+            return undefined;
+        }
 
-        const blockDevtoolsShortcuts = (event) => {
-            const key = event.key.toLowerCase();
-            const usesCommandOrControl = event.ctrlKey || event.metaKey;
-            const isF12 = key === "f12";
-            const isDevtoolsChord = usesCommandOrControl && event.shiftKey && devtoolsKeySet.has(key);
-            const isViewSource = usesCommandOrControl && key === "u";
-            const isMacAltChord = event.metaKey && event.altKey && devtoolsKeySet.has(key);
+        let rafId = null;
+        let targetX = window.innerWidth / 2;
+        let targetY = window.innerHeight / 2;
+        let currentX = targetX;
+        let currentY = targetY;
 
-            if (isF12 || isDevtoolsChord || isViewSource || isMacAltChord) {
-                event.preventDefault();
-                event.stopPropagation();
+        const onPointerMove = (event) => {
+            targetX = event.clientX;
+            targetY = event.clientY;
+            if (rafId === null) {
+                rafId = window.requestAnimationFrame(tick);
             }
         };
 
-        const blockContextMenu = (event) => {
-            event.preventDefault();
-        };
-
-        const detectDevtoolsAndLogEasterEgg = () => {
-            const widthGap = window.outerWidth - window.innerWidth;
-            const heightGap = window.outerHeight - window.innerHeight;
-            const isDevtoolsOpen = widthGap > devtoolsDetectThreshold || heightGap > devtoolsDetectThreshold;
-
-            if (isDevtoolsOpen && !wasDevtoolsOpen) {
-                console.log("hehe hello there. just a little easter egg");
+        const tick = () => {
+            currentX += (targetX - currentX) * 0.12;
+            currentY += (targetY - currentY) * 0.12;
+            glow.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) translate(-50%, -50%)`;
+            if (Math.abs(targetX - currentX) > 0.5 || Math.abs(targetY - currentY) > 0.5) {
+                rafId = window.requestAnimationFrame(tick);
+            } else {
+                rafId = null;
             }
-
-            wasDevtoolsOpen = isDevtoolsOpen;
         };
 
-        window.addEventListener("keydown", blockDevtoolsShortcuts, true);
-        window.addEventListener("contextmenu", blockContextMenu);
-        window.addEventListener("resize", detectDevtoolsAndLogEasterEgg);
-        const devtoolsDetectInterval = window.setInterval(detectDevtoolsAndLogEasterEgg, 1000);
-        detectDevtoolsAndLogEasterEgg();
-
+        window.addEventListener("pointermove", onPointerMove, { passive: true });
         return () => {
-            window.removeEventListener("keydown", blockDevtoolsShortcuts, true);
-            window.removeEventListener("contextmenu", blockContextMenu);
-            window.removeEventListener("resize", detectDevtoolsAndLogEasterEgg);
-            clearInterval(devtoolsDetectInterval);
+            window.removeEventListener("pointermove", onPointerMove);
+            if (rafId !== null) {
+                window.cancelAnimationFrame(rafId);
+            }
         };
+    }, []);
+
+    useEffect(() => {
+        const onScroll = () => {
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = docHeight > 0 ? window.scrollY / docHeight : 0;
+            setScrollProgress(Math.min(1, Math.max(0, progress)));
+        };
+        onScroll();
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
+    }, []);
+
+    // Radar: blips ping brighter near the cursor.
+    useEffect(() => {
+        const radar = radarRef.current;
+        if (!radar) {
+            return undefined;
+        }
+        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (prefersReducedMotion) {
+            return undefined;
+        }
+
+        const blips = Array.from(radar.querySelectorAll(".radar-blip"));
+        let rafId = null;
+        let pointerX = null;
+        let pointerY = null;
+
+        const onMove = (event) => {
+            const rect = radar.getBoundingClientRect();
+            pointerX = event.clientX - rect.left;
+            pointerY = event.clientY - rect.top;
+            if (rafId === null) {
+                rafId = window.requestAnimationFrame(update);
+            }
+        };
+
+        const onLeave = () => {
+            pointerX = null;
+            pointerY = null;
+            blips.forEach((blip) => blip.style.setProperty("--ping", "0"));
+        };
+
+        const update = () => {
+            if (pointerX === null) {
+                rafId = null;
+                return;
+            }
+            const rect = radar.getBoundingClientRect();
+            const radius = rect.width / 2;
+            for (const blip of blips) {
+                const bx = (parseFloat(blip.style.getPropertyValue("--bx")) / 100) * rect.width;
+                const by = (parseFloat(blip.style.getPropertyValue("--by")) / 100) * rect.height;
+                const dist = Math.hypot(pointerX - bx, pointerY - by);
+                const ping = Math.max(0, 1 - dist / (radius * 0.55));
+                blip.style.setProperty("--ping", ping.toFixed(2));
+            }
+            rafId = null;
+        };
+
+        radar.addEventListener("pointermove", onMove, { passive: true });
+        radar.addEventListener("pointerleave", onLeave, { passive: true });
+        return () => {
+            radar.removeEventListener("pointermove", onMove);
+            radar.removeEventListener("pointerleave", onLeave);
+            if (rafId !== null) {
+                window.cancelAnimationFrame(rafId);
+            }
+        };
+    }, []);
+
+    // A quiet greeting for the curious — replaces the old devtools/contextmenu blocking.
+    useEffect(() => {
+        const log = window.console.log?.bind(window.console);
+        if (!log) return undefined;
+        log("%c hehe hello there. just a little easter egg ", "color:#6ee7c7;font-family:monospace;font-size:12px");
+        return undefined;
     }, []);
 
     const nextTheme = theme === "light" ? "dark" : "light";
 
     return (
         <>
+            <div className="scroll-progress" aria-hidden="true">
+                <span style={{ transform: `scaleX(${scrollProgress})` }} />
+            </div>
+
             {introPhase !== "done" && (
                 <div className={`intro-overlay${introPhase === "exiting" ? " is-exiting" : ""}`}>
-                    <div className="intro-noise" aria-hidden="true"></div>
-                    <div className="intro-scanlines" aria-hidden="true"></div>
+                    <div className="intro-grain" aria-hidden="true"></div>
                     <div className="intro-modal">
                         <p className="intro-kicker">Booting profile</p>
-                        <h1 className="intro-name" data-text={introNameDisplay}>{introNameDisplay}</h1>
-                        <p className="intro-title" data-text={introTitleDisplay}>
+                        <h1 className="intro-name">{introNameDisplay}</h1>
+                        <p className="intro-title">
                             {introTitleDisplay}
                             <span className="intro-cursor" aria-hidden="true"></span>
                         </p>
@@ -477,15 +625,10 @@ function App() {
             )}
 
             <div className="ambient" aria-hidden="true">
-                <EtherealShadow
-                    color="rgba(224, 11, 11, 0.65)"
-                    animation={{ scale: 80, speed: 250 }}
-                    noise={{ opacity: 0.25, scale: 1.0 }}
-                    sizing="stretch"
-                    title={null}
-                />
-                <div className="ambient-noise"></div>
-                <div className="ambient-scanlines"></div>
+                <div className="aurora"></div>
+                <div className="aurora aurora--warm"></div>
+                <div className="ambient-grain"></div>
+                <div className="cursor-glow" ref={cursorGlowRef}></div>
             </div>
 
             <div className={`portfolio-shell${introPhase === "done" ? " is-ready" : ""}`}>
@@ -530,10 +673,12 @@ function App() {
                 <main className="site-main" id="home">
                 <section className="hero shell-grid reveal">
                     <div className="cell hero-intro">
-                        <p className="kicker">Security Engineer | SecOps and DevOps</p>
+                        <p className="kicker">SecOps · DevOps · Security Engineering</p>
                         <h1>Security Engineer</h1>
                         <p className="lede normal-case">
-                            Experienced in SecOps, VAPT-informed remediation, Penetration testing, SOC workflows, SIEM tuning, and DevOps security integration.
+                            I reduce risk through proactive detection, practical hardening, and measurable
+                            operational improvements — working across VAPT, SOC, SIEM tuning, and DevOps
+                            security integration.
                         </p>
                         <div className="hero-actions">
                             <a className="btn btn-primary" href="#experience">Explore Experience</a>
@@ -543,14 +688,15 @@ function App() {
                             <li><span>Email</span> <a href="mailto:contact@safalkarki7.com.np">contact@safalkarki7.com.np</a></li>
                             <li><span>Location</span> Nepal</li>
                             <li>
+                                <span>Signal</span>
                                 <ScrambleText
                                     quotes={[
-                                        "He who has a why to live can bear almost any how. - Nietzsche",
-                                        "The happiness of your life depends upon the quality of your thoughts. - Marcus Aurelius",
-                                        "In a time of deceit telling the truth is a revolutionary act. - Orwell",
-                                        "What does not kill me, makes me stronger. - Nietzsche",
-                                        "Waste no more time arguing about what a good man should be. Be one. - Marcus Aurelius",
-                                        "Freedom is the freedom to say that two plus two make four. - Orwell"
+                                        "He who has a why to live can bear almost any how. — Nietzsche",
+                                        "The happiness of your life depends upon the quality of your thoughts. — Marcus Aurelius",
+                                        "In a time of deceit telling the truth is a revolutionary act. — Orwell",
+                                        "What does not kill me, makes me stronger. — Nietzsche",
+                                        "Waste no more time arguing about what a good man should be. Be one. — Marcus Aurelius",
+                                        "Freedom is the freedom to say that two plus two make four. — Orwell"
                                     ]}
                                     cycleDuration={5000}
                                     transitionDuration={1500}
@@ -560,15 +706,26 @@ function App() {
                     </div>
 
                     <div className="cell hero-visual">
-                        <div className="profile-panel">
-                            <img src="/assets/backsafal.jpg" alt="Safal Karki portrait" />
-                            <div>
-                                <p className="panel-title">$whoami</p>
-                                <p className="normal-case">
-                                    I am a SecOps engineer with hands-on experience in offensive/defensive operations.
-                            My focus is maintaining systems in an observable and secure way at scale.
-                                </p>
+                        <div className="radar" ref={radarRef} aria-hidden="true">
+                            <div className="radar-rings"></div>
+                            <div className="radar-grid"></div>
+                            <div className="radar-sweep"></div>
+                            <div className="radar-blips">
+                                {RADAR_BLIPS.map((blip) => (
+                                    <span
+                                        key={blip.label}
+                                        className="radar-blip"
+                                        style={{ "--bx": `${blip.x}%`, "--by": `${blip.y}%`, "--ping": 0 }}
+                                    >
+                                        <span className="radar-blip-dot"></span>
+                                        <span className="radar-blip-label">{blip.label}</span>
+                                    </span>
+                                ))}
                             </div>
+                            <div className="radar-core"></div>
+                            <p className="radar-readout normal-case">
+                                <span className="dot" /> live · signal over noise
+                            </p>
                         </div>
 
                         <div className="terminal-panel" aria-label="Live engineering feed">
@@ -649,54 +806,7 @@ function App() {
                         </SpotlightCard>
                     </div>
                     <div className="cell tags-wrap">
-                        <span>VAPT</span>
-                        <span>SOC</span>
-                        <span>SIEM</span>
-                        <span>Wazuh</span>
-                        <span>DevOps</span>
-                        <span>DevSecOps</span>
-                        <span>CI/CD</span>
-                        <span>GitHub Actions</span>
-                        <span>Terraform</span>
-                        <span>AWS</span>
-                        <span>VPC</span>
-                        <span>EC2</span>
-                        <span>RDS</span>
-                        <span>DynamoDB</span>
-                        <span>ECS</span>
-                        <span>IAM</span>
-                        <span>S3</span>
-                        <span>CloudFront</span>
-                        <span>Route53</span>
-                        <span>CloudWatch</span>
-                        <span>Inspector</span>
-                        <span>GuardDuty</span>
-                        <span>Security Hub</span>
-                        <span>AWS WAF</span>
-                        <span>Lambda</span>
-                        <span>API Gateway</span>
-                        <span>Docker</span>
-                        <span>Kubernetes</span>
-                        <span>Docker Swarm</span>
-                        <span>Networking</span>
-                        <span>Infrastructure</span>
-                        <span>Virtualization</span>
-                        <span>Linux</span>
-                        <span>Linux Administration</span>
-                        <span>Nginx</span>
-                        <span>DNS</span>
-                        <span>Reverse Proxy</span>
-                        <span>SSL/TLS</span>
-                        <span>Bash</span>
-                        <span>Monitoring</span>
-                        <span>Incident Response</span>
-                        <span>CTF</span>
-                        <span>OSINT</span>
-                        <span>Node.js</span>
-                        <span>React</span>
-                        <span>PostgreSQL</span>
-                        <span>JavaScript</span>
-                        <span>Git</span>
+                        {TAGS.map((tag) => <Tag key={tag} label={tag} />)}
                     </div>
                 </section>
 
@@ -719,7 +829,7 @@ function App() {
                     </div>
                     <div className="cell timeline-note normal-case">
                         <p>
-                            Regularly conducting VAPT across projects and infrastructures, Monitoring through SIEM, Incident Response.                            
+                            Regularly conducting VAPT across projects and infrastructures, Monitoring through SIEM, Incident Response.
                         </p>
                         <p>Hands-on experience with Networking, virtualization, Linux/server
                         administration, secure application hosting, and containerized deployments. </p>
@@ -733,7 +843,9 @@ function App() {
                     </div>
                     <div className="cell projects-grid">
                         <SpotlightCard as="article" className="project-card">
-                            <img src="/assets/projects/hand.png" alt="Virtual Hand Simulation preview" />
+                            <div className="project-media">
+                                <img src="/assets/projects/hand.png" alt="Virtual Hand Simulation preview" />
+                            </div>
                             <div className="project-body">
                                 <h3>Virtual Hand Simulation</h3>
                                 <p className="normal-case">
@@ -746,7 +858,9 @@ function App() {
                         </SpotlightCard>
 
                         <SpotlightCard as="article" className="project-card">
-                            <img src="/assets/projects/flappy.png" alt="Flappy-NP project preview" />
+                            <div className="project-media">
+                                <img src="/assets/projects/flappy.png" alt="Flappy-NP project preview" />
+                            </div>
                             <div className="project-body">
                                 <h3>Flappy-NP</h3>
                                 <p className="normal-case">
@@ -760,7 +874,9 @@ function App() {
                         </SpotlightCard>
 
                         <SpotlightCard as="article" className="project-card">
-                            <img src="/assets/projects/robot.png" alt="Humanoid Robot project preview" />
+                            <div className="project-media">
+                                <img src="/assets/projects/robot.png" alt="Humanoid Robot project preview" />
+                            </div>
                             <div className="project-body">
                                 <h3>Humanoid Robot</h3>
                                 <p className="normal-case">
@@ -774,7 +890,9 @@ function App() {
                         </SpotlightCard>
 
                         <SpotlightCard as="article" className="project-card">
-                            <img src="/assets/projects/census.png" alt="Census Data Visualization preview" />
+                            <div className="project-media">
+                                <img src="/assets/projects/census.png" alt="Census Data Visualization preview" />
+                            </div>
                             <div className="project-body">
                                 <h3>Census Visualization</h3>
                                 <p className="normal-case">
@@ -854,8 +972,8 @@ function App() {
 
                 <footer className="site-footer shell-grid">
                     <p className="cell">Safal Karki</p>
-                    <p className="cell normal-case">Security Engineering - SecOps - DevOps</p>
-                    <p className="cell">(c) 2026</p>
+                    <p className="cell normal-case">Security Engineering · SecOps · DevOps</p>
+                    <p className="cell">© 2026</p>
                 </footer>
             </div>
         </>
