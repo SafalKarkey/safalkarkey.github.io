@@ -124,6 +124,8 @@ function App() {
     const terminalOutputRef = useRef(null);
     const brandScrambleIntervalRef = useRef(null);
     const tuneTimerRef = useRef(null);
+    const tabsRef = useRef(null);
+    const screenBodyRef = useRef(null);
 
     const activeIndex = SECTIONS.findIndex((s) => s.id === activeSection);
     const activeMeta = SECTIONS[activeIndex];
@@ -323,6 +325,23 @@ function App() {
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
     }, [cycleSection, selectSection]);
+
+    // Keep the active tab in view (mobile horizontal strip) and reset the
+    // screen scroll to the top whenever the channel changes.
+    useEffect(() => {
+        const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+        const nav = tabsRef.current;
+        const active = nav?.querySelector(".tab.is-active");
+        if (nav && active) {
+            const navRect = nav.getBoundingClientRect();
+            const tabRect = active.getBoundingClientRect();
+            const offset = tabRect.left - navRect.left - (nav.clientWidth - tabRect.width) / 2;
+            nav.scrollTo({ left: nav.scrollLeft + offset, behavior });
+        }
+        if (screenBodyRef.current) {
+            screenBodyRef.current.scrollTo({ top: 0, behavior });
+        }
+    }, [activeSection]);
 
     // Live terminal feed inside the HOME screen.
     useEffect(() => {
@@ -758,7 +777,7 @@ function App() {
                             <p className="chassis-serial">PERSONAL DATA TERMINAL</p>
                         </div>
 
-                        <nav className="chassis-plate chassis-tabs" aria-label="Section channels">
+                        <nav className="chassis-plate chassis-tabs" aria-label="Section channels" ref={tabsRef}>
                             {SECTIONS.map((section) => (
                                 <button
                                     key={section.id}
@@ -828,7 +847,7 @@ function App() {
                                     <span className="crt-status-right">SIG ██████&nbsp;98%</span>
                                 </div>
 
-                                <div className="crt-body">
+                                <div className="crt-body" ref={screenBodyRef}>
                                     {SECTIONS.map((section) => (
                                         <div
                                             key={section.id}
