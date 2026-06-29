@@ -326,6 +326,7 @@ body[data-theme="light"] .desk::after {
 .tab {
     display: flex;
     align-items: center;
+    min-height: 44px;
     padding: 0.7rem 0.9rem;
     border: 1px solid var(--line-soft);
     border-radius: 0;
@@ -496,6 +497,7 @@ body[data-theme="light"] .desk::after {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    min-height: 44px;
     gap: 0.55rem;
     width: 100%;
     border: 1px solid var(--line);
@@ -968,6 +970,7 @@ body[data-theme="light"] .crt-surface {
     display: grid;
     align-content: start;
     gap: 0.9rem;
+    min-width: 0;
 }
 
 /* ---------- Radar ---------- */
@@ -1106,6 +1109,7 @@ body[data-theme="light"] .crt-surface {
     border: 1px solid var(--line);
     background: var(--panel-strong);
     backdrop-filter: blur(8px);
+    min-width: 0;
 }
 
 .terminal-top {
@@ -1142,6 +1146,8 @@ body[data-theme="light"] .crt-surface {
     color: var(--muted);
     font-size: 0.78rem;
     line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
 }
 
 .terminal-line { margin-bottom: 0.3rem; }
@@ -1281,9 +1287,12 @@ body[data-theme="light"] .crt-surface {
     transition: border-color 0.2s ease, color 0.2s ease;
 }
 
-.tags-wrap span:hover {
-    border-color: var(--signal);
-    color: var(--signal);
+/* Tag hover is a pointer-only delight — gate it so it doesn't stick on touch. */
+@media (hover: hover) {
+    .tags-wrap span:hover {
+        border-color: var(--signal);
+        color: var(--signal);
+    }
 }
 
 /* ---------- DATA / EDU: timeline ---------- */
@@ -1493,12 +1502,21 @@ body[data-theme="light"] .crt-surface {
     opacity: 1;
 }
 
+/* Coarse pointers (touch): enlarge the small link pills so they're tappable. */
+@media (pointer: coarse) {
+    .panel-links a,
+    .project-links a {
+        padding: 0.75rem 0.8rem;
+        min-height: 44px;
+    }
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 980px) {
     .pipboy {
         height: 100dvh;
         min-height: 100dvh;
-        padding: 0.6rem;
+        padding: max(0.6rem, env(safe-area-inset-top)) max(0.6rem, env(safe-area-inset-right)) max(0.6rem, env(safe-area-inset-bottom)) max(0.6rem, env(safe-area-inset-left));
         align-items: stretch;
         place-items: stretch;
     }
@@ -1625,7 +1643,7 @@ body[data-theme="light"] .crt-surface {
 
 @media (max-width: 480px) {
     .pipboy {
-        padding: 0.45rem;
+        padding: max(0.45rem, env(safe-area-inset-top)) max(0.45rem, env(safe-area-inset-right)) max(0.45rem, env(safe-area-inset-bottom)) max(0.45rem, env(safe-area-inset-left));
     }
 
     .pipboy-frame {
@@ -1643,7 +1661,7 @@ body[data-theme="light"] .crt-surface {
     }
 
     .chassis-dial {
-        grid-template-columns: auto 1fr;
+        grid-template-columns: auto auto;
         justify-content: start;
         gap: 0.5rem;
     }

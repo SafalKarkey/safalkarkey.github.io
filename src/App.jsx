@@ -76,6 +76,10 @@ function Tag({ label }) {
     const [display, setDisplay] = useState(label);
     const rafRef = useRef(null);
     const isHovering = useRef(false);
+    const [canScramble] = useState(() => {
+        if (typeof window === "undefined" || !window.matchMedia) return false;
+        return window.matchMedia("(hover: hover)").matches;
+    });
 
     const clear = useCallback(() => {
         if (rafRef.current) {
@@ -127,7 +131,7 @@ function Tag({ label }) {
     useEffect(() => () => clear(), [clear]);
 
     return (
-        <span onMouseEnter={onEnter} onMouseLeave={onLeave}>
+        <span onMouseEnter={canScramble ? onEnter : undefined} onMouseLeave={canScramble ? onLeave : undefined}>
             {display}
         </span>
     );
@@ -157,6 +161,7 @@ function App() {
     const screenBodyRef = useRef(null);
     const introSkipRef = useRef(null);
     const introOverlayRef = useRef(null);
+    const crtSurfaceRef = useRef(null);
 
     const skipIntro = useCallback(() => {
         introSkipRef.current?.();
@@ -415,6 +420,34 @@ function App() {
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
     }, [cycleSection, selectSection]);
+
+    // Touch swipe on the CRT changes channels (mobile): swipe left → next, right → prev.
+    // Only horizontal-dominant swipes fire so vertical scrolling the panel still works.
+    useEffect(() => {
+        const el = crtSurfaceRef.current;
+        if (!el) return;
+        let startX = 0;
+        let startY = 0;
+        const onStart = (event) => {
+            const touch = event.touches[0];
+            startX = touch.clientX;
+            startY = touch.clientY;
+        };
+        const onEnd = (event) => {
+            const touch = event.changedTouches[0];
+            const dx = touch.clientX - startX;
+            const dy = touch.clientY - startY;
+            if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+                cycleSection(dx < 0 ? 1 : -1);
+            }
+        };
+        el.addEventListener("touchstart", onStart, { passive: true });
+        el.addEventListener("touchend", onEnd, { passive: true });
+        return () => {
+            el.removeEventListener("touchstart", onStart);
+            el.removeEventListener("touchend", onEnd);
+        };
+    }, [cycleSection]);
 
     // Keep the active tab in view (mobile horizontal strip) and reset the
     // screen scroll to the top whenever the channel changes.
@@ -937,7 +970,7 @@ function App() {
                     {/* CRT screen */}
                     <section className="crt" aria-label="Terminal display">
                         <div className="crt-bezel">
-                            <div className={`crt-surface${isTuning ? " is-tuning" : ""}`}>
+                            <div className={`crt-surface${isTuning ? " is-tuning" : ""}`} ref={crtSurfaceRef}>
                                 <div className="crt-scanlines" aria-hidden="true"></div>
                                 <div className="crt-vignette" aria-hidden="true"></div>
                                 <div className="crt-static" aria-hidden="true"></div>
