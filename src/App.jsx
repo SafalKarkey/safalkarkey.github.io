@@ -24,15 +24,34 @@ const RADAR_BLIPS = [
     { label: "THREAT HUNTING", x: 20, y: 40, delay: "-0.9s" },
 ];
 
-const TAGS = [
-    "VAPT", "SOC", "SIEM", "Wazuh", "DevOps", "DevSecOps", "CI/CD",
-    "GitHub Actions", "Terraform", "AWS", "VPC", "EC2", "RDS", "DynamoDB",
-    "ECS", "IAM", "S3", "CloudFront", "Route53", "CloudWatch", "Inspector",
-    "GuardDuty", "Security Hub", "AWS WAF", "Lambda", "API Gateway", "Docker",
-    "Kubernetes", "Docker Swarm", "Networking", "Infrastructure", "Virtualization",
-    "Linux", "Linux Administration", "Nginx", "DNS", "Reverse Proxy", "SSL/TLS",
-    "Bash", "Monitoring", "Incident Response", "CTF", "OSINT", "Node.js", "React",
-    "PostgreSQL", "JavaScript", "Git",
+const TAG_GROUPS = [
+    {
+        label: "Security Ops",
+        tags: ["VAPT", "SOC", "SIEM", "Wazuh", "DevSecOps", "Incident Response", "Monitoring", "CTF", "OSINT"],
+    },
+    {
+        label: "Cloud · AWS",
+        tags: [
+            "AWS", "VPC", "EC2", "RDS", "DynamoDB", "ECS", "IAM", "S3", "CloudFront",
+            "Route53", "CloudWatch", "Inspector", "GuardDuty", "Security Hub", "AWS WAF",
+            "Lambda", "API Gateway",
+        ],
+    },
+    {
+        label: "DevOps · IaC",
+        tags: ["DevOps", "CI/CD", "GitHub Actions", "Terraform", "Docker", "Kubernetes", "Docker Swarm"],
+    },
+    {
+        label: "Infrastructure · Linux",
+        tags: [
+            "Networking", "Infrastructure", "Virtualization", "Linux", "Linux Administration",
+            "Nginx", "DNS", "Reverse Proxy", "SSL/TLS", "Bash",
+        ],
+    },
+    {
+        label: "Languages · Frameworks",
+        tags: ["Node.js", "React", "PostgreSQL", "JavaScript", "Git"],
+    },
 ];
 
 const SECTIONS = [
@@ -55,13 +74,13 @@ function escapeHtml(text) {
 
 function Tag({ label }) {
     const [display, setDisplay] = useState(label);
-    const intervalRef = useRef(null);
+    const rafRef = useRef(null);
     const isHovering = useRef(false);
 
     const clear = useCallback(() => {
-        if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = null;
+        if (rafRef.current) {
+            cancelAnimationFrame(rafRef.current);
+            rafRef.current = null;
         }
     }, []);
 
@@ -69,24 +88,34 @@ function Tag({ label }) {
         isHovering.current = true;
         clear();
         let iteration = 0;
-        intervalRef.current = window.setInterval(() => {
+        let last = 0;
+        // requestAnimationFrame (not setInterval) — pauses when the tab is hidden and
+        // matches ScrambleText. A 28ms time-gate preserves the original scramble cadence.
+        const step = (now) => {
             if (!isHovering.current) return;
-            setDisplay(
-                label
-                    .split("")
-                    .map((character, index) => {
-                        if (character === " ") return " ";
-                        if (index < iteration) return label[index];
-                        return HACKER_GLYPHS[Math.floor(Math.random() * HACKER_GLYPHS.length)];
-                    })
-                    .join("")
-            );
-            iteration += 0.5;
-            if (iteration >= label.length) {
-                clear();
-                setDisplay(label);
+            if (last === 0) last = now;
+            if (now - last >= 28) {
+                last = now;
+                setDisplay(
+                    label
+                        .split("")
+                        .map((character, index) => {
+                            if (character === " ") return " ";
+                            if (index < iteration) return label[index];
+                            return HACKER_GLYPHS[Math.floor(Math.random() * HACKER_GLYPHS.length)];
+                        })
+                        .join("")
+                );
+                iteration += 0.5;
+                if (iteration >= label.length) {
+                    clear();
+                    setDisplay(label);
+                    return;
+                }
             }
-        }, 28);
+            rafRef.current = window.requestAnimationFrame(step);
+        };
+        rafRef.current = window.requestAnimationFrame(step);
     }, [label, clear]);
 
     const onLeave = useCallback(() => {
@@ -98,7 +127,7 @@ function Tag({ label }) {
     useEffect(() => () => clear(), [clear]);
 
     return (
-        <span onMouseEnter={onEnter} onMouseLeave={onLeave} onFocus={onEnter} onBlur={onLeave}>
+        <span onMouseEnter={onEnter} onMouseLeave={onLeave}>
             {display}
         </span>
     );
@@ -122,18 +151,24 @@ function App() {
     const [introPhase, setIntroPhase] = useState("active");
 
     const terminalOutputRef = useRef(null);
-    const brandScrambleIntervalRef = useRef(null);
+    const brandScrambleRafRef = useRef(null);
     const tuneTimerRef = useRef(null);
     const tabsRef = useRef(null);
     const screenBodyRef = useRef(null);
+    const introSkipRef = useRef(null);
+    const introOverlayRef = useRef(null);
+
+    const skipIntro = useCallback(() => {
+        introSkipRef.current?.();
+    }, []);
 
     const activeIndex = SECTIONS.findIndex((s) => s.id === activeSection);
     const activeMeta = SECTIONS[activeIndex];
 
     const stopBrandScramble = useCallback(() => {
-        if (brandScrambleIntervalRef.current) {
-            clearInterval(brandScrambleIntervalRef.current);
-            brandScrambleIntervalRef.current = null;
+        if (brandScrambleRafRef.current) {
+            cancelAnimationFrame(brandScrambleRafRef.current);
+            brandScrambleRafRef.current = null;
         }
 
         setIsBrandScrambling(false);
@@ -144,30 +179,39 @@ function App() {
         setIsBrandScrambling(true);
 
         let iteration = 0;
-        brandScrambleIntervalRef.current = window.setInterval(() => {
-            setBrandDisplayText(
-                BRAND_TEXT.split("")
-                    .map((character, index) => {
-                        if (character === " ") {
-                            return " ";
-                        }
+        let last = 0;
+        // requestAnimationFrame (not setInterval) — pauses when the tab is hidden and
+        // matches the Tag scramble. A 32ms time-gate preserves the original cadence.
+        const step = (now) => {
+            if (last === 0) last = now;
+            if (now - last >= 32) {
+                last = now;
+                setBrandDisplayText(
+                    BRAND_TEXT.split("")
+                        .map((character, index) => {
+                            if (character === " ") {
+                                return " ";
+                            }
 
-                        if (index < iteration) {
-                            return BRAND_TEXT[index];
-                        }
+                            if (index < iteration) {
+                                return BRAND_TEXT[index];
+                            }
 
-                        const randomIndex = Math.floor(Math.random() * HACKER_GLYPHS.length);
-                        return HACKER_GLYPHS[randomIndex];
-                    })
-                    .join("")
-            );
-
-            iteration += 0.4;
-            if (iteration >= BRAND_TEXT.length) {
-                stopBrandScramble();
-                setBrandDisplayText(BRAND_TEXT);
+                            const randomIndex = Math.floor(Math.random() * HACKER_GLYPHS.length);
+                            return HACKER_GLYPHS[randomIndex];
+                        })
+                        .join("")
+                );
+                iteration += 0.4;
+                if (iteration >= BRAND_TEXT.length) {
+                    stopBrandScramble();
+                    setBrandDisplayText(BRAND_TEXT);
+                    return;
+                }
             }
-        }, 32);
+            brandScrambleRafRef.current = window.requestAnimationFrame(step);
+        };
+        brandScrambleRafRef.current = window.requestAnimationFrame(step);
     }, [stopBrandScramble]);
 
     const resetBrandText = useCallback(() => {
@@ -180,6 +224,18 @@ function App() {
         const timers = [];
         const intervals = [];
         const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        // Resolve the intro immediately: clear pending timers/intervals, reveal the final
+        // text, and power on. Wired to a click / Escape / Enter skip (see skipIntro) plus a
+        // safety net so a stalled timer never traps the user behind the overlay.
+        const finishIntro = () => {
+            timers.forEach((timer) => clearTimeout(timer));
+            intervals.forEach((interval) => clearInterval(interval));
+            setIntroNameDisplay(BRAND_TEXT);
+            setIntroTitleDisplay(INTRO_TITLE);
+            setIntroPhase("done");
+        };
+        introSkipRef.current = finishIntro;
 
         const scrambleText = (targetText, setter, onComplete) => {
             let iteration = 0;
@@ -232,9 +288,15 @@ function App() {
             timers.push(titleTimer);
         });
 
+        // Safety net: never hold the user on the boot overlay longer than 4s, even if a
+        // scramble timer stalls or the tab was backgrounded mid-boot.
+        const safetyTimer = window.setTimeout(finishIntro, 4000);
+        timers.push(safetyTimer);
+
         return () => {
             timers.forEach((timer) => clearTimeout(timer));
             intervals.forEach((interval) => clearInterval(interval));
+            introSkipRef.current = null;
         };
     }, []);
 
@@ -247,6 +309,28 @@ function App() {
         };
     }, [introPhase]);
 
+    // Keyboard dismiss for the boot intro (click is handled on the overlay itself).
+    useEffect(() => {
+        if (introPhase === "done") return undefined;
+
+        const onKeyDown = (event) => {
+            if (event.key === "Escape" || event.key === "Enter") {
+                event.preventDefault();
+                skipIntro();
+            }
+        };
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+    }, [introPhase, skipIntro]);
+
+    // Move focus to the boot overlay while it's active so keyboard/AT users land on a
+    // dismissible target instead of tabbing through the hidden app behind it.
+    useEffect(() => {
+        if (introPhase !== "done") {
+            introOverlayRef.current?.focus();
+        }
+    }, [introPhase]);
+
     useEffect(() => {
         document.body.dataset.theme = theme;
         window.localStorage.setItem("portfolio-theme", theme);
@@ -254,9 +338,9 @@ function App() {
 
     useEffect(() => {
         return () => {
-            if (brandScrambleIntervalRef.current) {
-                clearInterval(brandScrambleIntervalRef.current);
-                brandScrambleIntervalRef.current = null;
+            if (brandScrambleRafRef.current) {
+                cancelAnimationFrame(brandScrambleRafRef.current);
+                brandScrambleRafRef.current = null;
             }
             if (tuneTimerRef.current) {
                 clearTimeout(tuneTimerRef.current);
@@ -277,6 +361,8 @@ function App() {
 
     const selectSection = useCallback((id) => {
         if (id === activeSection) return;
+        const newIndex = SECTIONS.findIndex((s) => s.id === id);
+        const direction = newIndex > activeIndex ? "up" : "down";
         const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
         if (tuneTimerRef.current) {
@@ -284,6 +370,10 @@ function App() {
             tuneTimerRef.current = null;
         }
 
+        // Direction drives the channel-in entrance (up = new panel from below,
+        // down = from above). The CRT flicker/static/roll runs concurrently via
+        // is-tuning to mask the channel swap — the full CRT retune.
+        document.documentElement.dataset.tuneDir = direction;
         setActiveSection(id);
         if (!prefersReducedMotion) {
             setIsTuning(true);
@@ -292,7 +382,7 @@ function App() {
                 tuneTimerRef.current = null;
             }, 520);
         }
-    }, [activeSection]);
+    }, [activeSection, activeIndex]);
 
     const cycleSection = useCallback((direction) => {
         const next = (activeIndex + direction + SECTIONS.length) % SECTIONS.length;
@@ -421,7 +511,7 @@ function App() {
     useEffect(() => {
         const log = window.console.log?.bind(window.console);
         if (!log) return undefined;
-        log("%c hehe hello there. just a little easter egg ", "color:#6ee7c7;font-family:monospace;font-size:12px");
+        log("%c PDT-3000 // signal established. say hello. ", "color:#6ee7c7;font-family:monospace;font-size:12px");
         return undefined;
     }, []);
 
@@ -440,6 +530,10 @@ function App() {
                                 operational improvements — working across VAPT, SOC, SIEM tuning, and DevOps
                                 security integration.
                             </p>
+                            <p className="home-contact">
+                                <span>Email</span>
+                                <a href="mailto:contact@safalkarki7.com.np">contact@safalkarki7.com.np</a>
+                            </p>
                             <div className="hero-actions">
                                 <button className="btn btn-primary" type="button" onClick={() => selectSection("data")}>
                                     Explore Experience
@@ -447,7 +541,6 @@ function App() {
                                 <a className="btn" href="/assets/Resume.pdf" download>Download Resume</a>
                             </div>
                             <ul className="quick-facts normal-case">
-                                <li><span>Email</span> <a href="mailto:contact@safalkarki7.com.np">contact@safalkarki7.com.np</a></li>
                                 <li><span>Location</span> Nepal</li>
                                 <li>
                                     <span>Signal</span>
@@ -503,7 +596,6 @@ function App() {
                 return (
                     <div className="panel panel--stats">
                         <header className="panel-head">
-                            <p className="kicker">{activeMeta.kicker}</p>
                             <h2 className="panel-title">How I work</h2>
                         </header>
                         <div className="stats-grid">
@@ -544,7 +636,6 @@ function App() {
                 return (
                     <div className="panel panel--inv">
                         <header className="panel-head">
-                            <p className="kicker">{activeMeta.kicker}</p>
                             <h2 className="panel-title">Security, cloud, and platform stack</h2>
                         </header>
                         <div className="skill-grid">
@@ -573,8 +664,15 @@ function App() {
                                 <p className="normal-case">AWS platform services, Terraform for IaC, and GitHub Actions based delivery pipelines.</p>
                             </SpotlightCard>
                         </div>
-                        <div className="tags-wrap">
-                            {TAGS.map((tag) => <Tag key={tag} label={tag} />)}
+                        <div className="tag-groups">
+                            {TAG_GROUPS.map((group) => (
+                                <div className="tag-group" key={group.label}>
+                                    <p className="tag-group-label">{group.label}</p>
+                                    <div className="tags-wrap">
+                                        {group.tags.map((tag) => <Tag key={tag} label={tag} />)}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 );
@@ -582,7 +680,6 @@ function App() {
                 return (
                     <div className="panel panel--data">
                         <header className="panel-head">
-                            <p className="kicker">{activeMeta.kicker}</p>
                             <h2 className="panel-title">Professional timeline</h2>
                         </header>
                         <div className="timeline">
@@ -609,7 +706,6 @@ function App() {
                 return (
                     <div className="panel panel--map">
                         <header className="panel-head">
-                            <p className="kicker">{activeMeta.kicker}</p>
                             <h2 className="panel-title">Selected work</h2>
                         </header>
                         <div className="projects-grid">
@@ -670,7 +766,6 @@ function App() {
                 return (
                     <div className="panel panel--edu">
                         <header className="panel-head">
-                            <p className="kicker">{activeMeta.kicker}</p>
                             <h2 className="panel-title">Academic timeline</h2>
                         </header>
                         <div className="timeline">
@@ -691,7 +786,6 @@ function App() {
                 return (
                     <div className="panel panel--log">
                         <header className="panel-head">
-                            <p className="kicker">{activeMeta.kicker}</p>
                             <h2 className="panel-title">Security acknowledgements</h2>
                         </header>
                         <div className="log-entry">
@@ -714,7 +808,6 @@ function App() {
                 return (
                     <div className="panel panel--comm">
                         <header className="panel-head">
-                            <p className="kicker">{activeMeta.kicker}</p>
                             <h2 className="panel-title">Let&apos;s build something useful</h2>
                         </header>
                         <div className="panel-copy normal-case">
@@ -740,7 +833,14 @@ function App() {
     return (
         <>
             {introPhase !== "done" && (
-                <div className={`intro-overlay${introPhase === "exiting" ? " is-exiting" : ""}`}>
+                <div
+                    className={`intro-overlay${introPhase === "exiting" ? " is-exiting" : ""}`}
+                    onClick={skipIntro}
+                    role="dialog"
+                    aria-label="Boot intro — click or press Escape to skip"
+                    tabIndex={-1}
+                    ref={introOverlayRef}
+                >
                     <div className="intro-grain" aria-hidden="true"></div>
                     <div className="intro-modal">
                         <p className="intro-kicker">PDT-3000 // booting</p>
@@ -749,6 +849,7 @@ function App() {
                             {introTitleDisplay}
                             <span className="intro-cursor" aria-hidden="true"></span>
                         </p>
+                        <p className="intro-skip">click or esc to skip</p>
                     </div>
                 </div>
             )}
@@ -757,7 +858,7 @@ function App() {
                 <div className="desk-grain"></div>
             </div>
 
-            <div className={`pipboy${introPhase === "done" ? " is-on" : ""}`}>
+            <div className={`pipboy${introPhase === "done" ? " is-on" : ""}`} inert={introPhase !== "done"}>
                 <div className="pipboy-frame">
                     {/* Left control chassis */}
                     <aside className="chassis" aria-label="Terminal controls">
@@ -774,7 +875,7 @@ function App() {
                             >
                                 <span className="brand-label">{brandDisplayText}</span>
                             </button>
-                            <p className="chassis-serial">PERSONAL DATA TERMINAL</p>
+                            <p className="chassis-serial">PDT-3000 · PERSONAL DATA TERMINAL</p>
                         </div>
 
                         <nav className="chassis-plate chassis-tabs" aria-label="Section channels" ref={tabsRef}>
