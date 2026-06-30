@@ -153,6 +153,22 @@ function App() {
     const [introNameDisplay, setIntroNameDisplay] = useState("");
     const [introTitleDisplay, setIntroTitleDisplay] = useState("");
     const [introPhase, setIntroPhase] = useState("active");
+    const [visitorIp, setVisitorIp] = useState(null);
+
+    // Pull the visitor's edge IP from the Cloudflare Pages Function at /ip.
+    // In dev the route 404s — leave the SIG readout as the static fallback.
+    useEffect(() => {
+        let cancelled = false;
+        fetch("/ip")
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+                if (!cancelled && data?.ip) setVisitorIp(data.ip);
+            })
+            .catch(() => {});
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     const terminalOutputRef = useRef(null);
     const brandScrambleRafRef = useRef(null);
@@ -978,7 +994,7 @@ function App() {
 
                                 <div className="crt-statusbar">
                                     <span className="crt-status-center">{activeMeta.code} · {activeMeta.label}</span>
-                                    <span className="crt-status-right">SIG ██████&nbsp;98%</span>
+                                    <span className="crt-status-right">{visitorIp ? `IP ${visitorIp}` : "SIG ██████ 98%"}</span>
                                 </div>
 
                                 <div className="crt-body" ref={screenBodyRef}>

@@ -732,6 +732,13 @@ body[data-theme="light"] .crt-surface {
     text-shadow: 0 0 10px var(--glow);
 }
 
+.crt-status-right {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
 .crt-hint {
     color: var(--muted-2);
     text-transform: none;
