@@ -994,7 +994,7 @@ function App() {
 
                                 <div className="crt-statusbar">
                                     <span className="crt-status-center">{activeMeta.code} · {activeMeta.label}</span>
-                                    <span className="crt-status-right">{visitorIp ? `IP ${visitorIp}` : "SIG ██████ 98%"}</span>
+                                    <span className="crt-status-right">{visitorIp ? `Hello ${visitorIp}`! : "SIG ██████ 98%"}</span>
                                 </div>
 
                                 <div className="crt-body" ref={screenBodyRef}>
